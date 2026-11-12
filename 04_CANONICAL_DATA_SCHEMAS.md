@@ -1,10 +1,11 @@
 # 04. Canonical Data Schemas
 
 **Document ID:** `LEGALAI-DOC-DE-04`  
-**Version:** `1.0.0`  
-**Status:** Validated Production Standard  
+**Version:** `1.1.0`  
+**Status:** Draft v1.0 — Pending Technical and Legal Review  
+**Audited Date:** 2026-11-12  
 **Framework:** Pydantic v2.10+ / JSON Schema Draft-07  
-**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `backend/app/models/schemas.py`
+**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `backend/app/models/schemas.py`, `PHASE_1_1_ISSUE_REGISTER.md`
 
 ---
 
@@ -12,9 +13,21 @@
 
 All data pipelines in LegalAI (ingestion, processing, annotation, vectorization, and fine-tuning) must strictly conform to the 10 canonical schemas defined in this document. 
 
-Every record across all schemas inherits from a foundational `CanonicalBaseRecord` containing mandatory provenance, identification, language, and audit metadata.
+### 1.1 Universal Harmonization Rules
+1. **Enum Harmonization with Backend Codebase:**
+   - The canonical clause classification enum is **`ClauseType`** (matching `backend/app/models/schemas.py`). `ClauseCategory` is maintained as a functional alias for backward compatibility.
+   - The canonical risk level enum is **`RiskLevel`** (matching `backend/app/models/schemas.py`). `RiskSeverity` is maintained as a functional alias.
+2. **Text Offset Standard:**
+   - All character offsets (`char_start`, `char_end`) refer to the **normalized text** using **0-based Unicode code points** (standard Python 3 string indexing `text[char_start:char_end]`). Offsets do **not** use byte offsets or UTF-16 code units.
+3. **Perspective Lens Standard:**
+   - Risk and clause records explicitly record analysis perspective: `party_a`, `party_b`, or `neutral`.
+4. **Synthetic vs. Empirical Isolation:**
+   - Hypothetical and synthetic case studies explicitly label ground truth reference analysis separately from machine-generated hypotheses to prevent synthetic text from being evaluated as empirical jurisprudence.
 
-### 1.1 Universal Base Schema
+---
+
+## 2. Universal Base Schema & Metadata Models
+
 ```python
 from datetime import datetime, timezone
 from enum import Enum
@@ -36,13 +49,29 @@ class LanguageCode(str, Enum):
     EN_HI_MIXED = "en_hi_mixed"
 
 
+class PerspectiveLens(str, Enum):
+    PARTY_A = "party_a"
+    PARTY_B = "party_b"
+    NEUTRAL = "neutral"
+
+
 class ProvenanceMetadata(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     source_name: str = Field(..., description="Canonical source e.g., 'CUAD', 'India-Code', 'DigiSCR'")
     source_url: Optional[str] = Field(None, description="Direct URL or archive URI")
     source_license: str = Field(..., description="License identifier e.g., 'CC-BY-4.0', 'Public-Domain'")
     sha256_hash: str = Field(..., description="Cryptographic SHA-256 hash of original raw document")
     ingested_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     raw_document_id: Optional[str] = Field(None, description="Upstream document identifier")
+    is_synthetic: bool = Field(default=False, description="Whether the record contains synthetic or LLM-generated data")
+
+
+class EmbeddingMetadata(BaseModel):
+    model_name: str = Field(..., description="e.g., 'BAAI/bge-small-en-v1.5' or 'BAAI/bge-m3'")
+    dimension: int = Field(..., description="e.g., 384 or 1024")
+    normalized: bool = Field(default=True, description="Whether vectors are L2-normalized")
+    revision: Optional[str] = Field(None, description="Model commit SHA or release tag")
 
 
 class CanonicalBaseRecord(BaseModel):
@@ -61,13 +90,13 @@ class CanonicalBaseRecord(BaseModel):
 
 ---
 
-## 2. The 10 Canonical Schemas
+## 3. The 10 Canonical Schemas
 
-### 2.1 Schema 1: Contract Clause Record (`ContractClauseRecord`)
-Represents an individual clause segmented from a contract, categorized according to the LegalAI clause taxonomy, and linked to its parent document offsets.
+### 3.1 Schema 1: Contract Clause Record (`ContractClauseRecord`)
+Represents an individual clause segmented from a contract, categorized according to the canonical `ClauseType` enum.
 
 ```python
-class ClauseCategory(str, Enum):
+class ClauseType(str, Enum):
     PAYMENT = "Payment"
     TERMINATION = "Termination"
     LIABILITY = "Liability"
@@ -90,28 +119,36 @@ class ClauseCategory(str, Enum):
     PENALTY = "Penalty"
     OTHER = "Other"
 
+# Functional alias for backward compatibility:
+ClauseCategory = ClauseType
+
 
 class ContractClauseRecord(CanonicalBaseRecord):
     clause_index: int = Field(..., ge=0, description="0-based sequence position in the contract")
     clause_title: Optional[str] = Field(None, description="Header text if present e.g., '14. INDEMNITY'")
     clause_text: str = Field(..., min_length=5, description="Full verbatim text of the clause")
-    clause_category: ClauseCategory = Field(..., description="Canonical clause classification")
-    secondary_categories: List[ClauseCategory] = Field(default_factory=list)
-    char_start: int = Field(..., ge=0, description="Start character offset in parent document")
-    char_end: int = Field(..., ge=0, description="End character offset in parent document")
+    clause_category: ClauseType = Field(..., description="Canonical clause classification")
+    secondary_categories: List[ClauseType] = Field(default_factory=list)
+    char_start: int = Field(..., ge=0, description="Start 0-based Unicode code point offset in normalized text")
+    char_end: int = Field(..., ge=0, description="End 0-based Unicode code point offset in normalized text")
     is_boilerplate: bool = Field(default=False, description="Whether the clause is standard boilerplate")
-    embedding: Optional[List[float]] = Field(None, description="Dense vector embedding (e.g., 384 or 1024 dim)")
+    perspective: PerspectiveLens = Field(default=PerspectiveLens.NEUTRAL, description="Review perspective")
+    embedding: Optional[List[float]] = Field(None, description="Dense vector embedding")
+    embedding_metadata: Optional[EmbeddingMetadata] = Field(None, description="Metadata describing embedding model")
 ```
 
-### 2.2 Schema 2: Contract Risk Record (`ContractRiskRecord`)
+### 3.2 Schema 2: Contract Risk Record (`ContractRiskRecord`)
 Represents an in-depth risk analysis of a clause or multi-clause interaction, compatible with `RiskReport` in `backend/app/models/schemas.py`.
 
 ```python
-class RiskSeverity(str, Enum):
+class RiskLevel(str, Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
     CRITICAL = "critical"
+
+# Functional alias for backward compatibility:
+RiskSeverity = RiskLevel
 
 
 class AffectedParty(str, Enum):
@@ -126,14 +163,16 @@ class StatutoryConflict(BaseModel):
     statute_name: str = Field(..., description="e.g., 'Indian Contract Act, 1872'")
     section_number: str = Field(..., description="e.g., 'Section 27'")
     conflict_type: str = Field(..., description="e.g., 'Void ab initio', 'Unenforceable penalty'")
-    legal_explanation: str = Field(..., description="Why the clause conflicts with this statute")
+    legal_explanation: str = Field(..., description="Detailed explanation of statutory conflict")
+    statute_status: str = Field(default="In Force", description="'In Force', 'Phased Commencement', or 'Repealed'")
 
 
 class ContractRiskRecord(CanonicalBaseRecord):
     clause_id: str = Field(..., description="example_id of the associated ContractClauseRecord")
-    risk_title: str = Field(..., description="Short risk identifier e.g., 'Uncapped Indemnity Exposure'")
-    risk_severity: RiskSeverity = Field(..., description="Severity level")
+    risk_title: str = Field(..., description="Short risk identifier e.g., 'Post-Termination Restraint of Trade'")
+    risk_severity: RiskLevel = Field(..., description="Canonical risk level")
     risk_score: float = Field(..., ge=0.0, le=100.0, description="0-100 numerical risk index")
+    perspective: PerspectiveLens = Field(default=PerspectiveLens.NEUTRAL, description="Perspective lens applied")
     affected_party: AffectedParty = Field(..., description="Which party bears the disproportionate risk")
     risk_reasons: List[str] = Field(..., min_length=1, description="Analytical justification points")
     statutory_conflicts: List[StatutoryConflict] = Field(default_factory=list)
@@ -141,8 +180,8 @@ class ContractRiskRecord(CanonicalBaseRecord):
     suggested_revision_text: Optional[str] = Field(None, description="Drafted replacement clause text")
 ```
 
-### 2.3 Schema 3: Legal NER Record (`LegalNERRecord`)
-Entity annotations spanning courts, judicial officers, statutory provisions, monetary values, and temporal anchors.
+### 3.3 Schema 3: Legal NER Record (`LegalNERRecord`)
+Entity annotations spanning exactly 11 canonical legal entity types:
 
 ```python
 class LegalEntityType(str, Enum):
@@ -162,10 +201,10 @@ class LegalEntityType(str, Enum):
 class EntitySpan(BaseModel):
     entity_id: str = Field(..., description="Unique ID for this mention")
     text: str = Field(..., description="Surface string mention")
-    label: LegalEntityType = Field(..., description="Entity category")
-    start_char: int = Field(..., ge=0)
-    end_char: int = Field(..., ge=0)
-    normalized_value: Optional[str] = Field(None, description="e.g., normalized ISO date or INR currency float")
+    label: LegalEntityType = Field(..., description="Canonical entity category")
+    start_char: int = Field(..., ge=0, description="Start 0-based Unicode code point offset")
+    end_char: int = Field(..., ge=0, description="End 0-based Unicode code point offset")
+    normalized_value: Optional[str] = Field(None, description="e.g., ISO-8601 date, INR float, or canonical citation")
 
 
 class LegalNERRecord(CanonicalBaseRecord):
@@ -174,7 +213,7 @@ class LegalNERRecord(CanonicalBaseRecord):
     token_count: int = Field(..., ge=0)
 ```
 
-### 2.4 Schema 4: Indian Legal Document Record (`IndianLegalDocumentRecord`)
+### 3.4 Schema 4: Indian Legal Document Record (`IndianLegalDocumentRecord`)
 Master container for statutes, gazette notifications, or unparsed court rulings.
 
 ```python
@@ -198,14 +237,14 @@ class IndianLegalDocumentRecord(CanonicalBaseRecord):
     commencement_date: Optional[str] = Field(None, description="YYYY-MM-DD")
     ministry_or_department: Optional[str] = Field(None)
     court_name: Optional[str] = Field(None)
-    citation: Optional[str] = Field(None, description="Standard reporter citation e.g., '(2023) 4 SCC 1'")
+    citation: Optional[str] = Field(None, description="Standard reporter citation e.g., '1954 AIR 44'")
     neutral_citation: Optional[str] = Field(None, description="Official neutral citation e.g., '2023 INSC 412'")
     full_text: str = Field(..., description="Full cleaned text of document")
     sections_or_clauses_count: int = Field(default=0)
     source_format: str = Field(default="PDF")
 ```
 
-### 2.5 Schema 5: Legal QA Record (`LegalQARecord`)
+### 3.5 Schema 5: Legal QA Record (`LegalQARecord`)
 Structured ground-truth question, answer, and statutory citation triples for RAG and instruction fine-tuning.
 
 ```python
@@ -222,6 +261,8 @@ class GroundingCitation(BaseModel):
     statute_or_case: str
     section_or_paragraph: str
     verbatim_quote: str
+    char_start: Optional[int] = None
+    char_end: Optional[int] = None
 
 
 class LegalQARecord(CanonicalBaseRecord):
@@ -234,7 +275,7 @@ class LegalQARecord(CanonicalBaseRecord):
     paired_english_example_id: Optional[str] = Field(None, description="Cross-reference to English QA pair")
 ```
 
-### 2.6 Schema 6: Retrieval Query and Relevance Pairs (`RetrievalRelevanceRecord`)
+### 3.6 Schema 6: Retrieval Query and Relevance Pairs (`RetrievalRelevanceRecord`)
 Format for training and evaluating cross-encoders, bi-encoders, and RAG retrieval pipelines (compatible with BEIR format).
 
 ```python
@@ -254,7 +295,7 @@ class RetrievalRelevanceRecord(CanonicalBaseRecord):
     retrieval_mode: str = Field(default="hybrid", description="'dense', 'sparse_bm25', 'hybrid'")
 ```
 
-### 2.7 Schema 7: Real Judgment Case Study Record (`RealJudgmentCaseStudyRecord`)
+### 3.7 Schema 7: Real Judgment Case Study Record (`RealJudgmentCaseStudyRecord`)
 Canonical FIRAC/IRAC schema decomposing complex Supreme Court / High Court opinions.
 
 ```python
@@ -264,6 +305,13 @@ class ArgumentRecord(BaseModel):
     arguments_advanced: List[str] = Field(..., min_length=1)
     statutes_cited: List[str] = Field(default_factory=list)
     precedents_relied_on: List[str] = Field(default_factory=list)
+
+
+class EvidencePassage(BaseModel):
+    passage_text: str = Field(..., description="Verbatim judicial excerpt")
+    paragraph_number: Optional[int] = Field(None)
+    char_start: Optional[int] = Field(None)
+    char_end: Optional[int] = Field(None)
 
 
 class RealJudgmentCaseStudyRecord(CanonicalBaseRecord):
@@ -286,11 +334,11 @@ class RealJudgmentCaseStudyRecord(CanonicalBaseRecord):
     obiter_dicta: Optional[str] = Field(None, description="Non-binding judicial observations")
     holding: str = Field(..., description="Final operational decree (Allowed, Dismissed, Remanded)")
     disposition: str = Field(..., description="Operational order on costs and relief")
-    evidence_passages: List[str] = Field(default_factory=list, description="Verbatim key evidentiary excerpts")
+    evidence_passages: List[EvidencePassage] = Field(default_factory=list, description="Structured verbatim excerpts")
 ```
 
-### 2.8 Schema 8: Hypothetical Case Study Record (`HypotheticalCaseStudyRecord`)
-Controlled synthetic scenario dataset for stress-testing model legal deduction without hallucinating real citations.
+### 3.8 Schema 8: Hypothetical Case Study Record (`HypotheticalCaseStudyRecord`)
+Controlled synthetic scenario dataset for stress-testing model legal deduction. Ground truth reference analysis is strictly separated from machine-generated hypotheses.
 
 ```python
 class SyntheticScenarioOrigin(str, Enum):
@@ -308,12 +356,13 @@ class HypotheticalCaseStudyRecord(CanonicalBaseRecord):
     contested_clauses: List[str] = Field(default_factory=list)
     key_legal_issues: List[str] = Field(..., min_length=1)
     governing_indian_law: List[str] = Field(..., min_length=1)
-    model_analysis: str = Field(..., min_length=50)
-    expected_conclusion: str = Field(..., min_length=20)
+    reference_analysis: str = Field(..., min_length=50, description="Expert-verified ground-truth legal analysis")
+    expected_conclusion: str = Field(..., min_length=20, description="Authoritative legal outcome")
+    generated_analysis: Optional[str] = Field(None, description="Optional LLM-generated output for evaluation comparison")
     rubric_scoring_criteria: Dict[str, str] = Field(default_factory=dict)
 ```
 
-### 2.9 Schema 9: Comparative Case Study Record (`ComparativeCaseStudyRecord`)
+### 3.9 Schema 9: Comparative Case Study Record (`ComparativeCaseStudyRecord`)
 Pairs two or more landmark rulings with conflicting or evolving ratios over time.
 
 ```python
@@ -343,7 +392,7 @@ class ComparativeCaseStudyRecord(CanonicalBaseRecord):
     prevailing_current_law: str = Field(..., min_length=20, description="Authoritative position today")
 ```
 
-### 2.10 Schema 10: Multi-Agent Evaluation Record (`AgentEvaluationRecord`)
+### 3.10 Schema 10: Multi-Agent Evaluation Record (`AgentEvaluationRecord`)
 Benchmark schema measuring the execution of multi-agent workflows (Extraction, Risk, Research, Drafting).
 
 ```python
@@ -382,7 +431,7 @@ class AgentEvaluationRecord(CanonicalBaseRecord):
 
 ---
 
-## 3. JSON Schema Specification (Sample: `ContractClauseRecord`)
+## 4. JSON Schema Specification (Sample: `ContractClauseRecord`)
 
 ```json
 {
@@ -418,9 +467,10 @@ class AgentEvaluationRecord(CanonicalBaseRecord):
       "required": ["source_name", "source_license", "sha256_hash"],
       "properties": {
         "source_name": { "type": "string" },
-        "source_url": { "type": "string", "format": "uri" },
+        "source_url": { "type": ["string", "null"] },
         "source_license": { "type": "string" },
-        "sha256_hash": { "type": "string" }
+        "sha256_hash": { "type": "string" },
+        "is_synthetic": { "type": "boolean", "default": false }
       }
     },
     "clause_index": { "type": "integer", "minimum": 0 },
@@ -436,11 +486,31 @@ class AgentEvaluationRecord(CanonicalBaseRecord):
         "Penalty", "Other"
       ] 
     },
-    "char_start": { "type": "integer", "minimum": 0 },
-    "char_end": { "type": "integer", "minimum": 0 },
-    "is_boilerplate": { "type": "boolean", "default": false }
+    "secondary_categories": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "char_start": { 
+      "type": "integer", 
+      "minimum": 0, 
+      "description": "0-based Unicode code point offset in normalized text" 
+    },
+    "char_end": { 
+      "type": "integer", 
+      "minimum": 0, 
+      "description": "0-based Unicode code point offset in normalized text" 
+    },
+    "is_boilerplate": { "type": "boolean", "default": false },
+    "perspective": { 
+      "type": "string", 
+      "enum": ["party_a", "party_b", "neutral"], 
+      "default": "neutral" 
+    },
+    "embedding": {
+      "type": ["array", "null"],
+      "items": { "type": "number" }
+    }
   },
   "additionalProperties": false
 }
 ```
-

@@ -1,9 +1,10 @@
 # 01. Dataset Engineering Architecture
 
 **Document ID:** `LEGALAI-DOC-DE-01`  
-**Version:** `1.0.0`  
+**Version:** `1.1.0`  
+**Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Classification:** Core System Architecture  
-**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`
+**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `PHASE_1_1_ISSUE_REGISTER.md`
 
 ---
 
@@ -11,7 +12,7 @@
 
 The LegalAI platform requires a scalable, deterministic, and legally compliant data architecture capable of processing complex unstructured legal corpora (contracts, central and state enactments, subordinate rules, Supreme Court of India and High Court judicial opinions) in both **English** and **Hindi**. 
 
-This document defines the **Medallion Data Lakehouse Architecture** (Bronze, Silver, Gold), the bilingual parallel ingestion topology, the vector database partition scheme, and the exact interface with the existing FastAPI + SQLAlchemy + Qdrant application stack.
+This document defines the **Medallion Data Lakehouse Architecture** (Bronze, Silver, Gold), the bilingual parallel ingestion topology, the vector database partition scheme, and the exact interface with the existing FastAPI + SQLAlchemy + Qdrant application stack, accurately distinguishing existing runtime components from planned enhancements.
 
 ---
 
@@ -20,11 +21,11 @@ This document defines the **Medallion Data Lakehouse Architecture** (Bronze, Sil
 ```mermaid
 flowchart TD
     subgraph Sources["Raw Ingestion Sources"]
-        S1["Contract Corpora<br/>(CUAD, MAUD, ACORD)"]
+        S1["Contract Corpora<br/>(CUAD, MAUD, Atticus ACORD)"]
         S2["Indian Statutory Repositories<br/>(India Code, State Gazettes)"]
-        S3["Case Law & Judgments<br/>(AWS SC/HC Judgments, KanoonGPT)"]
+        S3["Case Law & Judgments<br/>(AWS SC/HC Judgments, DigiSCR)"]
         S4["Bilingual Legal Corpora<br/>(LegalTransEn Indic, BhashaBench)"]
-        S5["Structured Case Studies<br/>(FIRAC-APPEALS, IndicLegalQA)"]
+        S5["Structured Case Studies<br/>(FIRAC-APPEALS, OpenNYAI)"]
     end
 
     subgraph Bronze["Tier 1: Bronze Lake (Raw Immutable Storage)"]
@@ -33,11 +34,11 @@ flowchart TD
     end
 
     subgraph Silver["Tier 2: Silver Lake (Cleaned, Normalized, Structured)"]
-        SV1["Document Parser & OCR Engine<br/>(PyMuPDF, pdfplumber, Tesseract/PaddleOCR)"]
-        SV2["Court Header/Footer & Watermark Stripper"]
-        SV3["Citation Normalizer & Legal NER Extractor"]
-        SV4["MinHash LSH Deduplication & Near-Duplicate Filter"]
-        SV5["Language Identifier & Script Validator (Devanagari/Latin)"]
+        SV1["Document Parser & OCR Engine<br/>(PyMuPDF, pdfplumber, PaddleOCR/Tesseract)"]
+        SV2["Court Header/Footer & Margin Line Number Stripper"]
+        SV3["Citation Normalizer & Legal NER Extractor (11 Canonical Entities)"]
+        SV4["MinHash LSH Deduplication & Near-Duplicate Cluster Filter"]
+        SV5["Language Identifier & Script Validator (NFC Devanagari/Latin)"]
         SV6["Canonical Schema Enforcer (Pydantic v2 Models)"]
     end
 
@@ -48,11 +49,11 @@ flowchart TD
         G4["Evaluation Benchmarks<br/>(Strict Document-Split Golden Testsets)"]
     end
 
-    subgraph Runtime["LegalAI Runtime Engine (Existing App)"]
-        R1["FastAPI Application Server<br/>(backend/app/main.py)"]
-        R2["Qdrant Vector Database<br/>(backend/app/services/vector_db.py)"]
-        R3["SQLAlchemy Relational Store<br/>(backend/app/models/db_models.py)"]
-        R4["Multi-Agent Orchestrator<br/>(Research, Risk, Drafting, Compliance)"]
+    subgraph Runtime["LegalAI Runtime Engine (Component Status)"]
+        R1["FastAPI Application Server<br/>(backend/app/main.py) [EXISTING]"]
+        R2["Qdrant Vector Database<br/>(backend/app/services/vector_db.py) [EXISTING]"]
+        R3["SQLAlchemy Relational Store<br/>(backend/app/models/db_models.py) [EXISTING]"]
+        R4["Multi-Agent Orchestrator<br/>(Sequential Prompt Chain in nlu.py) [PARTIAL -> TARGET]"]
     end
 
     Sources --> Bronze
@@ -76,7 +77,8 @@ The Bronze tier is an immutable, append-only landing zone. No transformations or
   │   ├── cuad/
   │   │   ├── raw_documents/
   │   │   └── cuad_master.json
-  │   └── maud/
+  │   ├── maud/
+  │   └── atticus_acord/
   ├── statutes/
   │   ├── central/
   │   │   ├── indian_contract_act_1872/
@@ -107,10 +109,10 @@ The Silver tier takes raw artifacts, processes them through deterministic extrac
 
 - **Processing Steps:**
   1. **Layout Extraction:** Convert multi-column Indian court judgments and double-spaced contracts into linearized text flows using bounding-box heuristics.
-  2. **Boilerplate & Noise Elimination:** Strip court watermarks, digital signature blocks, e-filing receipt numbers, advocate stamps, and line numbers (`1 to 28`).
+  2. **Boilerplate & Noise Elimination:** Strip court watermarks, digital signature blocks, e-filing receipt numbers, advocate stamps, and marginal line numbers without touching clause numbers.
   3. **Section & Clause Segmentation:** Deconstruct text into atomic legal units (clauses, statutory sections, FIRAC components).
-  4. **Legal Entity Extraction (NER):** Tag courts, judges, statutory citations, parties, dates, monetary values, and jurisdictional clauses.
-  5. **Deduplication:** Run MinHash LSH across documents with Jaccard similarity threshold $\ge 0.85$ to detect duplicate appellate judgments and contract boilerplates.
+  4. **Legal Entity Extraction (NER):** Tag 11 canonical legal entity types: courts, judges, statutory citations, sections, petitioners, respondents, dates, monetary values, obligations, precedents, and jurisdictional clauses.
+  5. **Deduplication:** Run MinHash LSH across documents with calibrated Jaccard similarity thresholds to cluster duplicate appellate judgments and standard form contract boilerplates.
   6. **Schema Enforcement:** Validate records against schemas defined in `04_CANONICAL_DATA_SCHEMAS.md`. Failed records route to `data/silver/quarantine/`.
 - **Storage Format:** Apache Parquet with Snappy compression, partitioned by `jurisdiction`, `legal_domain`, and `language`.
 
@@ -119,7 +121,7 @@ The Gold tier provides pre-indexed, curated, leakage-proof dataset splits optimi
 
 - **Partitions:**
   1. `gold/contracts/clause_classification/`: Multi-label balanced clause classification datasets (train/val/test splits).
-  2. `gold/contracts/risk_intelligence/`: Paired clause text, risk category, risk severity (`low`, `medium`, `high`, `critical`), statutory conflict tags, and revision suggestions.
+  2. `gold/contracts/risk_intelligence/`: Paired clause text, canonical clause type, risk level (`low`, `medium`, `high`, `critical`), statutory conflict tags, perspective lens, and revision suggestions.
   3. `gold/rag/statutes_corpus/`: Chunked statutory enactments enriched with section titles, parent statute names, chapter headings, and amendment history.
   4. `gold/rag/precedents_corpus/`: Segmented court judgments indexed with headnotes, ratio decidendi tags, and citation graphs.
   5. `gold/case_studies/firac/`: Structured FIRAC analyses with verified factual summaries and judicial rationale.
@@ -130,29 +132,29 @@ The Gold tier provides pre-indexed, curated, leakage-proof dataset splits optimi
 
 ## 4. Bilingual Dual-Stream Architecture (English & Hindi)
 
-LegalAI enforces a dual-stream data model to ensure Hindi is treated as a first-class citizen rather than an after-the-fact machine-translation artifact:
+LegalAI enforces a dual-stream data model to ensure Hindi is integrated natively into statutory retrieval and clause analysis:
 
 ```mermaid
 flowchart LR
     subgraph StreamA["English Primary Stream"]
-        EA1["English Case Laws & Contracts"] --> EA2["English Legal-BERT / RoBERTa"]
-        EA2 --> EA3["English Clause Index"]
+        EA1["English Case Laws & Contracts"] --> EA2["English Legal-BERT / RoBERTa [PLANNED]"]
+        EA2 --> EA3["English Clause Index [EXISTING: 384-dim]"]
     end
 
     subgraph StreamB["Hindi / Indic Stream"]
-        EB1["Hindi Official Gazettes & State Judgments"] --> EB2["IndicBERT / IndicBART / Muril"]
-        EB2 --> EB3["Hindi Clause Index"]
+        EB1["Hindi Official Gazettes & State Judgments"] --> EB2["IndicBERT / IndicBART / Muril [PLANNED]"]
+        EB2 --> EB3["Hindi Clause Index [PLANNED]"]
     end
 
     subgraph CrossLingualBridge["Cross-Lingual Semantic Space"]
-        EA3 <--> Alignment["Shared Bilingual Vector Space<br/>(multilingual BAAI/bge-m3 / sentence-transformers)"]
+        EA3 <--> Alignment["Shared Bilingual Vector Space<br/>(Target: BAAI/bge-m3 1024-dim) [PLANNED]"]
         EB3 <--> Alignment
-        Alignment --> HybridRetrieval["Bilingual RAG & Agent Querying"]
+        Alignment --> HybridRetrieval["Bilingual RAG & Agent Querying [TARGET]"]
     end
 ```
 
 ### 4.1 Linguistic Ingestion Guidelines
-1. **Parallel Corpora:** Pair English statutory text from *India Code* with official Hindi translations published by the Legislative Department of the Ministry of Law and Justice (Vidhi Sahitya Prakashan).
+1. **Parallel Corpora:** Pair English statutory text from *India Code* with official Hindi translations published by the Legislative Department of the Ministry of Law and Justice (Vidhi Sahitya Prakashan) under Section 5 of the Official Languages Act, 1963.
 2. **Script Sanitization:** Validate Hindi text using UTF-8 Devanagari Unicode blocks (`\u0900` to `\u097F`). Normalize nuktas, anusvaras, and chandrabindus using NFC normalization.
 3. **Term Aligner:** Maintain a verified English-to-Hindi legal terminology mapping (e.g., *Consideration* $\leftrightarrow$ *प्रतिफल*, *Indemnity* $\leftrightarrow$ *क्षतिपूर्ति*, *Injunction* $\leftrightarrow$ *व्यादेश*).
 
@@ -190,9 +192,10 @@ The dataset architecture interfaces directly with the operational application se
 
 ### 6.1 Vector DB (Qdrant) Integration
 - **Current File:** `backend/app/services/vector_db.py`
-- **Current Configuration:**
+- **Current Implementation Status:** **Existing**
   - Collection `clauses`: 384 dimensions (`BAAI/bge-small-en-v1.5`), Cosine distance.
   - Collection `statutes`: 384 dimensions (`BAAI/bge-small-en-v1.5`), Cosine distance.
+  - FastEmbed client runs locally in ONNX runtime mode.
 - **Architectural Scaling (Phase 2 & 3 Target):**
   - Maintain backward compatibility by retaining 384-dim local fallback for lightweight development.
   - Introduce bilingual collections: `statutes_hi`, `precedents_sc`, `precedents_hc` utilizing multilingual embeddings (1024-dim `bge-m3` or 768-dim `multilingual-e5-base`).
@@ -200,10 +203,11 @@ The dataset architecture interfaces directly with the operational application se
 
 ### 6.2 Relational Database Integration
 - **Current File:** `backend/app/models/db_models.py`
-- **Entities:** `Contract`, `Analysis`, `ChatSession`, `ChatMessage`, `AuditLog`.
+- **Current Implementation Status:** **Existing**
+- **Entities:** `User`, `Contract`, `Analysis`, `ChatSession`, `ChatMessage`, `AuditLog`.
 - **Pipeline Interlock:** Gold dataset samples (e.g., standard benchmark contracts and test cases) can be automatically seeded into the relational SQLite/PostgreSQL store for regression testing and frontend demonstration.
 
 ### 6.3 Rule Engines
 - **Current Files:** `backend/app/services/classifier.py` and `backend/app/services/compliance.py`.
-- **Pipeline Interlock:** Gold statutory datasets generate the statutory knowledge graph and rule tables utilized by `compliance.py` to evaluate clauses against Sections 10, 23, 27, 28, 56, 73, and 74 of the Indian Contract Act, 1872.
-
+- **Current Implementation Status:** **Existing**
+- **Pipeline Interlock:** Gold statutory datasets generate the statutory knowledge graph and rule tables utilized by `compliance.py` to evaluate clauses against Sections 10, 11, 23, 27, 28, 56, 73 (unliquidated damages requiring proof of loss), and 74 (liquidated damages / penalties) of the Indian Contract Act, 1872.

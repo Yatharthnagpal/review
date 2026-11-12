@@ -1,9 +1,10 @@
 # 05. Label Taxonomy
 
 **Document ID:** `LEGALAI-DOC-DE-05`  
-**Version:** `1.0.0`  
-**Status:** Canonical Classification & Ontology Standard  
-**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `backend/app/models/schemas.py`
+**Version:** `1.1.0`  
+**Status:** Draft v1.0 — Pending Technical and Legal Review  
+**Audited Date:** 2026-11-12  
+**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `backend/app/models/schemas.py`, `PHASE_1_1_ISSUE_REGISTER.md`
 
 ---
 
@@ -12,19 +13,20 @@
 A deterministic, legally precise taxonomy is the prerequisite for high-performance NLP models. In legal analytics, ambiguous classification schemas lead to catastrophic downstream errors in compliance checks and risk scores.
 
 This document defines the canonical multi-tier taxonomy for LegalAI:
-1. **Contract Clause Taxonomy (21 Standard Categories + CUAD Crosswalk)**
-2. **Contract Risk Severity & Typology**
-3. **Indian Statutory Anchor Matrix**
-4. **Legal Named Entity Recognition (NER) Taxonomy**
-5. **Judicial Rhetorical Roles Taxonomy**
+1. **Contract Clause Taxonomy (21 Canonical `ClauseType` Classes + CUAD Crosswalk)**
+2. **Contract Risk Severity & Typology (`RiskLevel` Standard)**
+3. **Perspective Lens Framework (Party A, Party B, Neutral Auditor)**
+4. **Indian Statutory Anchor Matrix (ICA 1872, DPDP 2023, Arb Act 1996, Companies Act 2013, CPA 2019)**
+5. **Legal Named Entity Recognition (NER) Taxonomy (11 Canonical Classes)**
+6. **Judicial Rhetorical Roles Taxonomy (7 Canonical OpenNYAI Classes)**
 
 ---
 
-## 2. Contract Clause Taxonomy (21 Standard Classes)
+## 2. Contract Clause Taxonomy (21 Canonical Classes)
 
 All clauses are classified into one primary category and zero or more secondary categories. These classes maintain strict parity with `ClauseType` in `backend/app/models/schemas.py` and map directly to `CLAUSE_RULES` in `backend/app/services/classifier.py`.
 
-| Category ID | Canonical Label | Semantic Definition & Inclusions | Crosswalk: CUAD 41 Class Alignment |
+| Category ID | Canonical Label (`ClauseType`) | Semantic Definition & Inclusions | Crosswalk: CUAD 41 Class Alignment |
 | :--- | :--- | :--- | :--- |
 | `CL-01` | **Payment** | Compensation, invoices, fee schedules, tax liability, reimbursable expenses, late interest charges. | `Price Restrictions`, `Minimum Commitment` |
 | `CL-02` | **Termination** | Expiration, termination for cause, termination for convenience, cure periods, exit transitions. | `Termination for Convenience`, `Notice Period to Terminate` |
@@ -50,7 +52,26 @@ All clauses are classified into one primary category and zero or more secondary 
 
 ---
 
-## 3. Risk Severity and Typology
+## 3. Perspective Lens Framework
+
+Risk analysis cannot be performed in the abstract because a clause that is advantageous to one contracting party is frequently hazardous to the counterparty. LegalAI enforces three distinct perspective lenses:
+
+```mermaid
+flowchart TD
+    Clause["Contract Clause Input"] --> LensRouter{"Perspective Lens Selector"}
+    
+    LensRouter -->|"Party A Perspective"| LensA["Party A Lens (Vendor / Licensor / Employer)<br/>Prioritizes payment security, liability caps, broad IP ownership"]
+    LensRouter -->|"Party B Perspective"| LensB["Party B Lens (Customer / Licensee / Employee)<br/>Prioritizes broad warranties, strict indemnities, flexible termination"]
+    LensRouter -->|"Neutral Auditor"| LensN["Neutral Legal Auditor Lens<br/>Focuses on statutory enforceability, balanced reciprocity, public policy"]
+```
+
+1. **Party A (`party_a`):** Evaluates risk from the perspective of the first executing party (typically the service provider, vendor, licensor, lessor, or employer).
+2. **Party B (`party_b`):** Evaluates risk from the perspective of the receiving party (typically the customer, client, licensee, lessee, or employee).
+3. **Neutral Auditor (`neutral`):** Objective legal review evaluating statutory validity, procedural fairness, and court enforceability under Indian law.
+
+---
+
+## 4. Risk Severity and Typology (`RiskLevel` Standard)
 
 Risks are assessed against contractual fairness and Indian statutory enforceability. Every identified risk is assigned a severity grade conforming to `RiskLevel` in `backend/app/models/schemas.py`:
 
@@ -58,16 +79,16 @@ Risks are assessed against contractual fairness and Indian statutory enforceabil
 graph LR
     Low["Low (0 - 39)<br/>Minor Ambiguity / Standard Term"] --> Medium["Medium (40 - 69)<br/>One-Sided / Lacks Reciprocity"]
     Medium --> High["High (70 - 89)<br/>Substantial Financial Risk / Restrictive"]
-    High --> Critical["Critical (90 - 100)<br/>Statutory Violation / Void Ab Initio / Unlimited Liability"]
+    High --> Critical["Critical (90 - 100)<br/>Statutory Bar / Void Ab Initio / Unlimited Liability"]
 ```
 
-### 3.1 Severity Definitions and Triggers
+### 4.1 Severity Definitions and Triggers
 
 1. **Critical (`critical`, 90–100):**
    - **Definition:** Directly violates mandatory Indian statutory provisions, is declared void *ab initio* by statute, or exposes a party to catastrophic uncapped liability.
    - **Triggers:**
-     - Post-termination non-compete clause violating **Section 27 of the Indian Contract Act, 1872**.
-     - Total waiver of right to litigate or arbitrate violating **Section 28 of the Indian Contract Act, 1872**.
+     - Post-termination non-compete clause violating **Section 27 of the Indian Contract Act, 1872** (void *ab initio* per *Percept D'Mark v. Zaheer Khan*).
+     - Absolute waiver of right to litigate or arbitrate violating **Section 28 of the Indian Contract Act, 1872**.
      - Uncapped, unlimited liability on indirect, consequential, or punitive damages.
      - Unlawful object or consideration violating **Section 23 of the Indian Contract Act, 1872**.
 
@@ -96,72 +117,73 @@ graph LR
 
 ---
 
-## 4. Indian Statutory Anchor Matrix
+## 5. Indian Statutory Anchor Matrix
 
-LegalAI anchors all compliance and risk intelligence directly to Indian legislative enactments. The dataset pipeline tags statutory conflicts using the following codified matrix:
+LegalAI anchors all compliance and risk intelligence directly to Indian legislative enactments.
 
 ```mermaid
 flowchart TD
     ContractClause["Contract Clause"] --> StatEval{"Statutory Anchor Evaluation"}
     
     StatEval --> ICA["Indian Contract Act, 1872"]
-    StatEval --> DPDP["DPDP Act, 2023"]
+    StatEval --> DPDP["DPDP Act, 2023 (Phased Commencement)"]
     StatEval --> Arb["Arbitration & Conciliation Act, 1996"]
     StatEval --> Comp["Companies Act, 2013"]
     StatEval --> CPA["Consumer Protection Act, 2019"]
 
-    ICA --> Sec10["Sec 10/11: Competency & Free Consent"]
+    ICA --> Sec10["Sec 10: Requirements of Contract"]
+    ICA --> Sec11["Sec 11: Competence to Contract (Minority Void)"]
     ICA --> Sec23["Sec 23: Unlawful Object & Public Policy"]
     ICA --> Sec27["Sec 27: Restraint of Trade (Void)"]
     ICA --> Sec28["Sec 28: Restraint of Legal Proceedings"]
-    ICA --> Sec73["Sec 73/74: Unreasonable Penalties"]
+    ICA --> Sec56["Sec 56: Impossibility & Frustration"]
+    ICA --> Sec73["Sec 73: Unliquidated Damages (Proof of Loss)"]
+    ICA --> Sec74["Sec 74: Liquidated Damages / Penalties"]
     
-    DPDP --> DPDP4["Sec 4/6: Consent & Notice Mandates"]
-    DPDP --> DPDP16["Sec 16: Cross-Border Transfer Limits"]
-
+    DPDP --> DPDPGov["Data Governance Principles<br/>(Notice, Consent, Purpose Limitation)"]
     CPA --> CPA2["Sec 2(46): Unfair Contract Terms"]
 ```
 
-### 4.1 Statutory Reference Guide
+### 5.1 Statutory Reference Guide
 * **Indian Contract Act, 1872:**
-  - `ICA-SEC-10`: Essential elements of contract; free consent, competent parties, lawful consideration.
-  - `ICA-SEC-11`: Disqualification of minors, unsound mind (contract void *ab initio* per *Mohori Bibee v. Dharmodas Ghose*).
-  - `ICA-SEC-23`: Unlawful consideration/object opposed to public policy.
-  - `ICA-SEC-27`: Agreements in restraint of trade void (except sale of goodwill).
-  - `ICA-SEC-28`: Agreements in restraint of legal proceedings void; statutory limitation periods cannot be curtailed.
-  - `ICA-SEC-56`: Frustration of contract; agreement to do impossible act void.
-  - `ICA-SEC-73`: Compensation for loss or damage caused by breach of contract (direct, foreseeable damages only).
-  - `ICA-SEC-74`: Liquidated damages vs. penalties; court awards reasonable compensation not exceeding stipulated amount (*Fateh Chand v. Balkishan Dass*, *Kailash Nath Associates*).
-* **Digital Personal Data Protection Act, 2023 (DPDP):**
-  - `DPDP-SEC-05`: Notice requirement prior to seeking consent.
-  - `DPDP-SEC-06`: Explicit, informed, unconditional consent standards.
-  - `DPDP-SEC-08`: Duties of Data Fiduciaries; security safeguards, erasure obligations.
-  - `DPDP-SEC-09`: Processing of personal data of children (no tracking, no behavioral monitoring).
-  - `DPDP-SEC-16`: Transfer of personal data outside India (restricted countries).
+  - `ICA-SEC-10`: **What agreements are contracts.** Sets the essential ingredients: free consent, parties competent to contract, lawful consideration, lawful object, not expressly declared void.
+  - `ICA-SEC-11`: **Who are competent to contract.** Defines competence (age of majority, sound mind, not disqualified by law). A contract entered into by a minor is void *ab initio* (*Mohori Bibee v. Dharmodas Ghose*).
+  - `ICA-SEC-23`: **What considerations and objects are lawful.** Consideration or object is unlawful if forbidden by law, fraudulent, injurious to person or property, immoral, or opposed to public policy.
+  - `ICA-SEC-27`: **Agreement in restraint of trade void.** Every agreement restraining a person from exercising a lawful profession, trade, or business is void to that extent (sole exception: sale of goodwill within reasonable local limits).
+  - `ICA-SEC-28`: **Agreements in restraint of legal proceedings void.** Restricting enforcement of rights or limiting the statutory limitation period is void. Exception: valid arbitration agreements.
+  - `ICA-SEC-56`: **Agreement to do impossible act / Frustration.** An agreement to do an impossible act is void. If an act becomes impossible or unlawful after execution without default of either party, the contract becomes void (*Satyabrata Ghose v. Mugneeram Bangur*).
+  - `ICA-SEC-73`: **Compensation for loss or damage caused by breach (Unliquidated Damages).** Party suffering breach is entitled to compensation for loss/damage which naturally arose in the usual course of things, or which parties contemplated when contracting. Remote and indirect loss is barred. **Actual loss must be proven.**
+  - `ICA-SEC-74`: **Compensation for breach where penalty stipulated (Liquidated Damages).** Governs pre-agreed damages. The court awards reasonable compensation not exceeding the amount named, whether or not actual damage is proved, subject to judicial review (*Fateh Chand*, *Kailash Nath Associates*). Punitive penalties exceeding genuine pre-estimates of loss are unenforceable.
+* **Digital Personal Data Protection Act, 2023 (DPDP Act) — Phased Commencement:**
+  - `DPDP-SEC-05`: Notice obligations prior to seeking consent.
+  - `DPDP-SEC-06`: Consent conditions (free, specific, informed, unconditional, unambiguous).
+  - `DPDP-SEC-08`: Obligations of Data Fiduciaries (technical and organizational safeguards, erasure upon withdrawal).
+  - `DPDP-SEC-16`: Cross-border data transfer framework.
+  - *Note on Enforcement:* Operational rules are in phased notification by the Central Government.
 * **Arbitration and Conciliation Act, 1996:**
-  - `ARB-SEC-07`: Valid arbitration agreement in writing.
-  - `ARB-SEC-11`: Appointment of arbitrators; judicial intervention limits.
-  - `ARB-SEC-34`: Grounds for setting aside arbitral awards (public policy of India, patent illegality).
+  - `ARB-SEC-07`: Form of arbitration agreement (must be in writing).
+  - `ARB-SEC-11`: Judicial appointment of arbitrators.
+  - `ARB-SEC-34`: Grounds for setting aside arbitral awards (patent illegality, conflict with public policy of India).
 * **Companies Act, 2013:**
-  - `COMP-SEC-180`: Restrictions on powers of Board (borrowing beyond paid-up capital, disposing undertaking).
-  - `COMP-SEC-188`: Related party transactions requiring audit committee and board/shareholder approval.
+  - `COMP-SEC-180`: Restrictions on powers of Board.
+  - `COMP-SEC-188`: Related party transactions requiring approvals.
 * **Consumer Protection Act, 2019:**
-  - `CPA-SEC-2-46`: Unfair Contract Terms: imposition of unreasonable conditions, excessive deposits, unilateral termination.
+  - `CPA-SEC-2-46`: **Unfair Contract Terms:** Unilateral termination, excessive security deposits, imposing disproportionate penalties on consumers.
 
 ---
 
-## 5. Legal Named Entity Recognition (NER) Taxonomy
+## 6. Legal Named Entity Recognition (NER) Taxonomy (11 Classes)
 
-The Legal NER tagset expands classical CoNLL entities to capture legal actors, statutory references, and judicial offices:
+The Legal NER tagset defines exactly 11 canonical legal entity classes:
 
 ```
 [B/I]-PETITIONER            : Individual, corporation, or entity initiating lawsuit / first party
 [B/I]-RESPONDENT            : Defendant, respondent, non-moving party / second party
 [B/I]-JUDGE                 : Judicial officer presiding over matter (e.g., 'CJI D.Y. Chandrachud')
 [B/I]-COURT                 : Judicial forum (e.g., 'Supreme Court of India', 'Delhi High Court')
-[B/I]-STATUTE               : Named legislative Act or Code (e.g., 'Companies Act, 2013')
-[B/I]-SECTION               : Codified section, sub-section, or article (e.g., 'Section 434(1)(a)', 'Article 226')
-[B/I]-PRECEDENT_CITATION    : Law reporter citation (e.g., '(2018) 1 SCC 560', 'AIR 1967 SC 1643')
+[B/I]-STATUTE               : Named legislative Act or Code (e.g., 'Indian Contract Act, 1872')
+[B/I]-SECTION               : Codified section, sub-section, or article (e.g., 'Section 74(1)', 'Article 226')
+[B/I]-PRECEDENT_CITATION    : Law reporter citation (e.g., '(2015) 4 SCC 136', '1954 AIR 44')
 [B/I]-MONETARY_AMOUNT       : Financial value in INR or foreign currencies (e.g., '₹5,00,00,000', 'Rs. 25 Lakhs')
 [B/I]-DATE                  : Effective date, execution date, limitation milestone (e.g., '14th August, 2022')
 [B/I]-OBLIGATION            : Actionable covenant statement (e.g., 'shall maintain books of account')
@@ -170,7 +192,7 @@ The Legal NER tagset expands classical CoNLL entities to capture legal actors, s
 
 ---
 
-## 6. Judicial Rhetorical Roles Taxonomy
+## 7. Judicial Rhetorical Roles Taxonomy (7 Classes)
 
 For judgment decomposition and FIRAC extraction, LegalAI adopts the 7 canonical rhetorical roles established by OpenNYAI and SemEval-2023 Task 6:
 
@@ -184,4 +206,3 @@ graph TD
     JudicialOpinion --> R6["6. Ratio Decidendi (Binding principle of law deduced by the court)"]
     JudicialOpinion --> R7["7. Ruling by Present Court (Operative final order, costs, decree)"]
 ```
-

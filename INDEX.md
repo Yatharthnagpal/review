@@ -1,8 +1,8 @@
 # LegalAI Dataset Engineering Documentation
 
 **Document ID:** `LEGALAI-DOC-DE-INDEX`  
-**Version:** `1.0.0`  
-**Status:** Approved for Implementation (Phase 1 Baseline)  
+**Version:** `1.1.0`  
+**Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Authors:** Senior AI Architect, Legal NLP Engineer, Data Engineer, ML Research Engineer  
 **Target Platform:** LegalAI (Indian Legal Intelligence Platform — English & Hindi)
 
@@ -13,11 +13,11 @@
 This directory contains the canonical specifications, dataset architectures, source registries, licensing policies, schema definitions, annotation protocols, bilingual strategies, and governance standards for the **LegalAI Data Platform**.
 
 The platform is designed to power the complete legal intelligence lifecycle for Indian and common-law jurisdictions, spanning:
-1. **Contract Understanding & Risk Intelligence:** Clause segmentation, classification across 21+ categories, risk scoring, one-sided clause identification, and compliance verification against Indian statutes.
-2. **Indian Statutory & Case Law RAG:** High-precision hybrid semantic and lexical retrieval across central/state statutes, regulations, notifications, and Supreme Court / High Court case laws.
-3. **Structured Case Studies (FIRAC/IRAC):** Landmark Indian judgments broken down into Facts, Issues, Arguments, Applicable Laws, Precedents, Court Reasoning, Ratio Decidendi, and Holdings, alongside synthetic and moot contract disputes.
-4. **Bilingual Legal NLP (English & Hindi):** Native cross-lingual retrieval, bilingual named entity recognition (Legal NER), legal machine translation verification, and Hindi query comprehension grounded in Indian statutory definitions.
-5. **Multi-Agent Legal Orchestration:** Autonomous legal research, risk audit, compliance verification, drafting, and human-in-the-loop review checkpoints.
+1. **Contract Understanding & Risk Intelligence:** Clause segmentation, classification across 21 canonical categories, risk scoring, one-sided clause identification, and compliance verification against Indian statutes.
+2. **Indian Statutory & Case Law RAG:** Hybrid semantic and lexical retrieval across central/state statutes, regulations, notifications, and Supreme Court / High Court case laws.
+3. **Structured Case Studies (FIRAC/IRAC):** Landmark Indian judgments decomposed into Facts, Procedural History, Issues, Arguments, Applicable Laws, Precedents, Court Analysis, Ratio Decidendi, Obiter Dicta, and Holdings, alongside synthetic and moot contract disputes.
+4. **Bilingual Legal NLP (English & Hindi):** Native cross-lingual retrieval, bilingual named entity recognition (Legal NER), legal translation verification, and Hindi query comprehension grounded in Indian statutory definitions.
+5. **Multi-Agent Legal Orchestration (Target Architecture):** Autonomous legal research, risk audit, compliance verification, drafting, and human-in-the-loop review checkpoints.
 
 ---
 
@@ -27,7 +27,7 @@ The platform is designed to power the complete legal intelligence lifecycle for 
 docs/dataset-engineering/
 ├── INDEX.md                                # Master index and architecture guide (this file)
 ├── 01_DATASET_ARCHITECTURE.md              # Pipeline architecture (Bronze/Silver/Gold), ETL topology, storage tiers
-├── 02_SOURCE_REGISTRY.md                   # Verified registry of 14+ candidate datasets across 4 primary categories
+├── 02_SOURCE_REGISTRY.md                   # Verified registry of 16 candidate datasets across 4 primary categories
 ├── 03_LICENSE_AND_PROVENANCE_POLICY.md     # Intellectual property, Indian Copyright Act §52(1)(q), DPDP Act, licenses
 ├── 04_CANONICAL_DATA_SCHEMAS.md            # 10 production-grade Pydantic v2 & JSON schemas for all legal records
 ├── 05_LABEL_TAXONOMY.md                    # Canonical taxonomy for clauses, risks, Indian statutes, NER, and rhetorical roles
@@ -38,33 +38,47 @@ docs/dataset-engineering/
 ├── 10_DATASET_SPLITTING_AND_LEAKAGE.md     # Document-level clustering, MinHash deduplication, leakage prevention
 ├── 11_HUGGINGFACE_PIPELINE.md              # HF Datasets loader scripts, PyArrow/Parquet serialization, Hub cards
 ├── 12_DATA_QUALITY_AND_VALIDATION.md       # Automated validation checks, Great Expectations, citation integrity tests
-├── 13_DATA_PRIVACY_AND_GOVERNANCE.md       # PII scrubbing, POCSO/matrimonial anonymization, DPDP compliance, audit trails
-└── 14_DATASET_IMPLEMENTATION_ROADMAP.md    # Transition roadmap from Phase 1 foundation to Phase 2 data engineering
+├── 13_DATA_PRIVACY_AND_GOVERNANCE.md       # PII scrubbing, POCSO/BNS anonymization, DPDP compliance, audit trails
+├── 14_DATASET_IMPLEMENTATION_ROADMAP.md    # Transition roadmap from Phase 1 foundation to Phase 2 data engineering
+├── PHASE_1_1_CHANGELOG.md                  # Comprehensive record of Phase 1.1 revisions and evidence
+├── PHASE_1_1_ISSUE_REGISTER.md             # Consolidated tracking register of all identified and resolved issues
+├── PHASE_1_1_VALIDATION_REPORT.md          # Automated & manual validation results across all criteria
+└── PHASE_1_1_SIGNOFF.md                    # Final technical and legal review sign-off checklist
 ```
 
 ---
 
-## 3. Architecture Alignment with Existing Codebase
+## 3. Codebase Verification & Component Alignment
 
-The schemas, taxonomies, and storage specifications in this documentation directly interface with and extend the existing LegalAI backend and frontend services:
+Every documented component has been audited against the actual source code in the repository. Status definitions:
+- **Existing:** Verified in the current source code.
+- **Partial:** Exists in code but lacks full documented functionality.
+- **Planned:** Described in architectural documentation; not yet implemented in code.
+- **Missing:** Required by feature scope but not found in repository.
+- **Unverified:** Insufficient evidence to determine status.
 
-| Existing Codebase Component | File Path | Phase 1 Documentation Binding |
-| :--- | :--- | :--- |
-| **Pydantic API Schemas** | `backend/app/models/schemas.py` | Compatible with `ClauseAnalysis`, `ComplianceIssue`, `RiskReport`, `ContractSummary` in `04_CANONICAL_DATA_SCHEMAS.md` |
-| **SQLAlchemy ORM** | `backend/app/models/db_models.py` | Aligned with `contracts`, `analyses`, `chat_sessions`, `chat_messages`, and `audit_logs` |
-| **Vector DB (Qdrant)** | `backend/app/services/vector_db.py` | Indexes `clauses` (dim 384) and `statutes` (dim 384); extensible to bilingual embeddings in `01_DATASET_ARCHITECTURE.md` |
-| **Statute Compliance Engine** | `backend/app/services/compliance.py` | Governed by statutory rules in `05_LABEL_TAXONOMY.md` and `04_CANONICAL_DATA_SCHEMAS.md` |
-| **Clause Classifier** | `backend/app/services/classifier.py` | Rules in `CLAUSE_RULES` map 1:1 to the 21 clause categories in `05_LABEL_TAXONOMY.md` |
-| **Risk Analyzer** | `backend/app/services/risk_analyzer.py` | Severity scales (`low`, `medium`, `high`, `critical`) mapped directly to `05_LABEL_TAXONOMY.md` |
-| **Entity Extractor** | `backend/app/services/extractor.py` | Regex/heuristics expanded into 9 legal entity types in `04_CANONICAL_DATA_SCHEMAS.md` and `05_LABEL_TAXONOMY.md` |
-| **Parchment Frontend** | `frontend/src/` | Visualizes risk reports, FIRAC summaries, perspective lenses, and dual-mode reader |
+| Codebase Component | Implementation Location | Verified Status | Notes on Existing vs. Target Capability |
+| :--- | :--- | :--- | :--- |
+| **Pydantic API Schemas** | `backend/app/models/schemas.py` | **Existing** | Uses `RiskLevel` and `ClauseType`. Canonical schemas in `04` harmonize directly with these enums. |
+| **SQLAlchemy ORM Models** | `backend/app/models/db_models.py` | **Existing** | Tables: `users`, `contracts`, `analyses`, `chat_sessions`, `chat_messages`, `audit_logs`. |
+| **Vector DB (Qdrant)** | `backend/app/services/vector_db.py` | **Existing** | Local Qdrant instance; collections `clauses` and `statutes` (384-dim, FastEmbed `bge-small-en-v1.5`). |
+| **Audit Logging Service** | `backend/app/services/audit.py` | **Existing** | Function `log_audit(db, action, details, user_id, ip_address)` records to `audit_logs` table. |
+| **Statute Compliance Engine** | `backend/app/services/compliance.py` | **Existing** | Heuristic regex rules checking Indian Contract Act, 1872 (Sections 10, 23, 27, 28, 56, 73-74). |
+| **Clause Classifier** | `backend/app/services/classifier.py` | **Existing** | Heuristic keyword/regex classifier (`CLAUSE_RULES`) covering 21 clause categories. |
+| **Risk Analyzer** | `backend/app/services/risk_analyzer.py` | **Existing** | Heuristic rules calculating risk score and levels (`low`, `medium`, `high`, `critical`). |
+| **Entity & Obligation Extractor** | `backend/app/services/extractor.py` | **Existing** | Heuristic regex parser extracting parties, obligations, dates, values, and deadlines. |
+| **RAG Retrieval Engine** | `backend/app/services/nlu.py` + `vector_db.py` | **Partial** | Basic Qdrant cosine similarity search + prompt injection into Groq LLM; lacks hybrid dense-sparse reranking and citation cross-verification. |
+| **Multi-Agent Orchestration** | `backend/app/services/nlu.py` | **Partial** | Sequential prompt-chaining function (`generate_chat_response` runs Analyst $\rightarrow$ Compliance $\rightarrow$ Counsel); lacks autonomous agent state machines, tool loops, and independent worker routing. |
+| **Model Fine-Tuning Pipeline**| N/A | **Planned** | Transformer fine-tuning (Legal-BERT) is scheduled for Phase 3; no training scripts currently exist. |
+| **Bilingual Hindi RAG** | N/A | **Planned** | Currently embeddings are English-only (`bge-small-en-v1.5`). Multilingual embedding (`bge-m3`) scheduled for Phase 2/3. |
+| **Parchment Frontend** | `frontend/src/` | **Existing** | React 18 + Vite 6 UI with Parchment theme, dual reading modes, perspective lens selector, and review modals. |
 
 ---
 
-## 4. Operational Boundaries (Phase 1 Governance)
+## 4. Operational Boundaries (Phase 1 & 1.1 Governance)
 
-1. **No Source Modification:** No files within `frontend/` or `backend/` are modified during Phase 1.
-2. **No Model Training:** Model pre-training, fine-tuning, and embedding retraining are strictly reserved for Phase 3 and Phase 4.
-3. **No Bulk Ingestion:** Raw dataset downloads and heavy crawling are strictly deferred until Phase 2 pipelines are configured.
-4. **Verification Requirement:** All dataset URLs, repository identifiers, licenses, and row counts documented in `02_SOURCE_REGISTRY.md` are audited. Any unverified parameter is explicitly tagged with `NEEDS VERIFICATION`.
-
+1. **No Source Code Modification:** No files within `frontend/` or `backend/` are modified during Phase 1 or Phase 1.1.
+2. **No Model Training:** Model pre-training, fine-tuning, and embedding retraining are strictly deferred to Phase 3.
+3. **No Bulk Ingestion:** Raw dataset downloads and heavy crawling are strictly deferred to Phase 2 pipelines.
+4. **License & Provenance Verification:** All dataset URLs, repository identifiers, licenses, and row counts are verified against upstream records or explicitly tagged with `NEEDS VERIFICATION`.
+5. **Human Approval Checkpoint:** Phase 2 data engineering cannot begin without explicit stakeholder sign-off on the Phase 1.1 documentation.

@@ -1,18 +1,19 @@
 # 11. Hugging Face Datasets & Hub Pipeline
 
 **Document ID:** `LEGALAI-DOC-DE-11`  
-**Version:** `1.0.0`  
-**Status:** Canonical Serialization & Hub Standard  
+**Version:** `1.1.0`  
+**Status:** Draft v1.0 — Pending Technical and Legal Review  
+**Audited Date:** 2026-11-12  
 **Framework:** Hugging Face `datasets` $\ge 2.18$ / `pyarrow` $\ge 14.0$  
-**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `04_CANONICAL_DATA_SCHEMAS.md`
+**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `PHASE_1_1_ISSUE_REGISTER.md`
 
 ---
 
 ## 1. Executive Summary
 
-The Hugging Face ecosystem (`datasets`, `hub`, `evaluate`) provides standard tooling for streaming large corpora, versioning training splits, and managing gated private datasets. 
+The Hugging Face ecosystem (`datasets`, `hub`, `evaluate`) provides standard tooling for streaming large corpora, versioning training splits, and managing gated private datasets.
 
-This document defines the serialization format, loading script architecture, Parquet partition standards, and Dataset Card specifications for releasing and maintaining LegalAI datasets on the Hugging Face Hub under the internal namespace `legalai-in/`.
+This document defines the serialization format, loading script architecture, Parquet partition standards, and Dataset Card specifications for releasing and maintaining LegalAI datasets on the Hugging Face Hub under the organization namespace `legalai-in/`.
 
 ---
 
@@ -20,7 +21,7 @@ This document defines the serialization format, loading script architecture, Par
 
 All Silver and Gold datasets are serialized strictly to **Apache Parquet** format with Snappy compression. Parquet provides columnar efficiency, schema enforcement, dictionary encoding for categorical fields (e.g., clause types), and direct streaming compatibility via `datasets.load_dataset(..., split='train', streaming=True)`.
 
-### 2.1 PyArrow Schema Specification (Sample: `ContractClauseRecord`)
+### 2.1 PyArrow Schema Specification (`ContractClauseRecord`)
 
 ```python
 import pyarrow as pa
@@ -39,6 +40,7 @@ CONTRACT_CLAUSE_ARROW_SCHEMA = pa.schema([
         pa.field("sha256_hash", pa.string(), nullable=False),
         pa.field("ingested_at", pa.timestamp('ms', tz='UTC'), nullable=False),
         pa.field("raw_document_id", pa.string(), nullable=True),
+        pa.field("is_synthetic", pa.bool_(), nullable=False),
     ]), nullable=False),
     pa.field("clause_index", pa.int32(), nullable=False),
     pa.field("clause_title", pa.string(), nullable=True),
@@ -48,6 +50,7 @@ CONTRACT_CLAUSE_ARROW_SCHEMA = pa.schema([
     pa.field("char_start", pa.int64(), nullable=False),
     pa.field("char_end", pa.int64(), nullable=False),
     pa.field("is_boilerplate", pa.bool_(), nullable=False),
+    pa.field("perspective", pa.string(), nullable=False),
     pa.field("embedding", pa.list_(pa.float32()), nullable=True),
 ])
 ```
@@ -56,7 +59,11 @@ CONTRACT_CLAUSE_ARROW_SCHEMA = pa.schema([
 
 ## 3. Custom Hugging Face Dataset Builder Script
 
-For dataset distribution and training integration, LegalAI provides a `GeneratorBasedBuilder` script that supports multi-configuration loading (`contracts`, `statutes`, `judgments`, `firac`):
+For dataset distribution and training integration, LegalAI provides a `GeneratorBasedBuilder` script that supports multi-configuration loading (`contract_clauses`, `firac_case_studies`, `statutes_bilingual`).
+
+> [!IMPORTANT]
+> **Independent Per-Config Licensing:**
+> Datasets comprising distinct upstream sources must **never** be assigned a blanket uniform license. In LegalAI, each dataset configuration independently declares its specific licensing metadata.
 
 ```python
 """
@@ -67,7 +74,6 @@ Usage:
 """
 
 import os
-import json
 import pyarrow.parquet as pq
 import datasets
 
@@ -77,13 +83,13 @@ contracts, central/state statutes, Supreme Court FIRAC case studies, and complia
 """
 
 _HOMEPAGE = "https://github.com/LegalAI/LegalAI"
-_LICENSE = "Mixed (See individual partition provenance)"
 
 class LegalAIConfig(datasets.BuilderConfig):
-    """BuilderConfig for LegalAI dataset slices."""
-    def __init__(self, data_url=None, **kwargs):
+    """BuilderConfig for LegalAI dataset slices with independent licensing."""
+    def __init__(self, data_url=None, specific_license="Custom", **kwargs):
         super().__init__(**kwargs)
         self.data_url = data_url
+        self.specific_license = specific_license
 
 
 class LegalAIDataset(datasets.GeneratorBasedBuilder):
@@ -92,25 +98,27 @@ class LegalAIDataset(datasets.GeneratorBasedBuilder):
     BUILDER_CONFIGS = [
         LegalAIConfig(
             name="contract_clauses",
-            version=datasets.Version("1.0.0"),
+            version=datasets.Version("1.1.0"),
             description="21-class balanced contract clauses with provenance.",
+            specific_license="CC-BY-4.0",
         ),
         LegalAIConfig(
             name="firac_case_studies",
-            version=datasets.Version("1.0.0"),
+            version=datasets.Version("1.1.0"),
             description="Supreme Court of India FIRAC decomposed landmark judgments.",
+            specific_license="CC-BY-4.0 (Annotations) / Public Domain (Judgments)",
         ),
         LegalAIConfig(
             name="statutes_bilingual",
-            version=datasets.Version("1.0.0"),
+            version=datasets.Version("1.1.0"),
             description="Parallel English-Hindi Central Acts and subordinate rules.",
+            specific_license="Government Open Data (OGD) / Public Domain per Sec 52(1)(q)",
         ),
     ]
 
     DEFAULT_CONFIG_NAME = "contract_clauses"
 
     def _info(self):
-        # Maps configuration to PyArrow features
         if self.config.name == "contract_clauses":
             features = datasets.Features({
                 "example_id": datasets.Value("string"),
@@ -124,7 +132,10 @@ class LegalAIDataset(datasets.GeneratorBasedBuilder):
                     "Notice", "Amendment", "Severability", "Entire Agreement", "Renewal",
                     "Penalty", "Other"
                 ]),
+                "char_start": datasets.Value("int64"),
+                "char_end": datasets.Value("int64"),
                 "is_boilerplate": datasets.Value("bool"),
+                "perspective": datasets.Value("string"),
             })
         elif self.config.name == "firac_case_studies":
             features = datasets.Features({
@@ -147,11 +158,10 @@ class LegalAIDataset(datasets.GeneratorBasedBuilder):
             description=_DESCRIPTION,
             features=features,
             homepage=_HOMEPAGE,
-            license=_LICENSE,
+            license=self.config.specific_license,
         )
 
     def _split_generators(self, dl_manager):
-        # Points to local partitioned Parquet files or remote Hub endpoints
         base_path = f"data/gold/{self.config.name}"
         return [
             datasets.SplitGenerator(
@@ -178,14 +188,12 @@ class LegalAIDataset(datasets.GeneratorBasedBuilder):
 
 ## 4. Hub Dataset Card Specification (`README.md`)
 
-Every dataset pushed to the Hugging Face Hub under `legalai-in/` must feature a standardized metadata header:
-
 ```yaml
 ---
 language:
 - en
 - hi
-license: cc-by-4.0
+license: other
 multilinguality:
 - bilingual
 size_categories:
@@ -227,4 +235,3 @@ source_datasets:
 2. **Access Token Handling:**
    - Production systems read the token via environment variable `HF_TOKEN`.
    - Never commit Hugging Face access tokens into repository code or documentation.
-
