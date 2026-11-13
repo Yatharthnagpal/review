@@ -1,10 +1,10 @@
 # 08. Case Study Data Specification
 
 **Document ID:** `LEGALAI-DOC-DE-08`  
-**Version:** `1.2.0`  
+**Version:** `1.2.2`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Audited Date:** 2026-11-13  
-**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md#realjudgmentcasestudyrecord`, `05_LABEL_TAXONOMY.md`, `PHASE_1_2_EVIDENCE_REGISTER.md`
+**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md#realjudgmentcasestudyrecord`, `05_LABEL_TAXONOMY.md`, `PHASE_1_2_2_EVIDENCE_REGISTER.md`
 
 ---
 

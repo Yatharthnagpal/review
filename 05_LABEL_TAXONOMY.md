@@ -1,11 +1,11 @@
 # 05. Label Taxonomy and Legal Annotation Rules
 
 **Document ID:** `LEGALAI-DOC-DE-05`  
-**Version:** `1.2.1`  
+**Version:** `1.2.2`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Audited Date:** 2026-11-13  
 **Framework:** Legal NLP Multi-Task Label Architecture  
-**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `06_ANNOTATION_GUIDELINES.md`, `PHASE_1_2_1_EVIDENCE_REGISTER.md`
+**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `06_ANNOTATION_GUIDELINES.md`, `PHASE_1_2_2_EVIDENCE_REGISTER.md`
 
 ---
 
@@ -15,7 +15,7 @@ This specification establishes the canonical label taxonomies, semantic classifi
 
 To eliminate ambiguity across human annotators and transformer classifiers, this document defines:
 1. The **21 Canonical Contract Clause Classes** (`ClauseType`), crosswalked to CUAD.
-2. Contextual legal risk rules under Indian law, resolving non-compete (§ 27 ICA) and governing law/arbitration (§ 28 Arbitration Act 1996 vs § 28 ICA 1872).
+2. Contextual legal risk rules under Indian law, resolving non-compete covenants (§ 27 ICA) and governing law/arbitration (§ 28 Arbitration Act 1996 vs § 28 ICA 1872).
 3. The **Decoupled Risk Scoring Framework**, strictly separating intrinsic `legal_risk_score` from `model_confidence` and `evidence_completeness`.
 4. The **11-Class Legal Named Entity Recognition (NER)** taxonomy.
 5. The **7-Class Rhetorical Roles** taxonomy for Supreme Court and High Court judgments.
@@ -56,31 +56,60 @@ All contract clauses ingested into the Silver and Gold tiers are categorized int
 
 Legal enforceability under Indian law cannot be evaluated using crude binary rules. A clause that is void in one commercial context may be fully enforceable in another.
 
-### 3.1 Non-Compete Clauses (Section 27, Indian Contract Act, 1872)
-- **During the Term of Employment/Contract (VALID):** Restrictive covenants operating *during* the subsistence of the contract are **valid and enforceable** to protect legitimate business interests (*Niranjan Shankar Golikari v. Century Spg. & Mfg. Co. AIR 1967 SC 1098*). They do not constitute a restraint of trade under Section 27.
-- **Post-Termination Non-Compete (VOID AB INITIO):** Restrictive covenants operating *after* termination or expiry of the agreement are **void ab initio** under Section 27 (*Percept D'Mark (India) Pvt. Ltd. v. Zaheer Khan (2006) 4 SCC 227*). Indian courts do not apply the English common law doctrine of reasonableness to post-employment restrictions.
-- **Statutory Exception (VALID):** An agreement not to carry on a similar business within specified local limits upon the **sale of the goodwill of a business** is explicitly valid under the Exception to Section 27, provided the limits appear reasonable to the court.
-- **Annotation Directive:** A non-compete clause cannot be marked `critical` without verifying whether it applies post-termination or during the term.
+> [!IMPORTANT]
+> **Triage vs. Legal Advice Disclaimer:**  
+> The LegalAI classifier provides **algorithmic risk screening and practitioner triage**. It does **not** issue a final legal opinion or conclusive judicial determination on contract enforceability.
 
-### 3.2 Governing Law, Arbitration & Jurisdiction Clauses
+### 3.1 Non-Compete Clauses (Section 27, Indian Contract Act, 1872)
+
+Section 27 declares: *"Every agreement by which any one is restrained from exercising a lawful profession, trade or business of any kind, is to that extent void."* Indian courts interpret this provision across distinct factual and contractual contexts:
+
+1. **Restraints Operating During the Subsistence of the Agreement (VALID):**
+   - *Employment Contracts:* Negative covenants restraining an employee from engaging in competing employment *during* the contractual period are **valid and enforceable** to protect trade secrets and employer goodwill (*Niranjan Shankar Golikari v. Century Spinning & Mfg. Co. AIR 1967 SC 1098*).
+   - *Commercial Collaboration / Franchise Contracts:* Negative covenants operating during the currency of a commercial agreement (e.g., franchise or exclusive supply agreement) do not attract Section 27 (*Gujarat Bottling Co. Ltd. v. Coca Cola Co. (1995) 5 SCC 545*).
+2. **Restraints Operating Post-Termination / Post-Employment (VOID AB INITIO):**
+   - In employment contracts, restrictive covenants operating *after* termination or expiry of the agreement are **void ab initio** under Section 27 (*Superintendence Company of India (P) Ltd. v. Krishan Murgai (1981) 2 SCC 246*; *Percept D'Mark (India) Pvt. Ltd. v. Zaheer Khan (2006) 4 SCC 227*).
+   - Indian courts do **not** apply the English common law doctrine of partial reasonableness to post-employment restraints; Section 27 admits no exception for reasonable post-service restraints.
+3. **Statutory Exception: Sale of Goodwill of a Business (VALID):**
+   - The Exception to Section 27 explicitly validates an agreement by a seller of goodwill not to carry on a similar business within specified local limits, provided the limits appear reasonable to the court.
+4. **Partnership Act Exceptions (VALID):**
+   - Sections 11(2), 36(2), 54, and 55(3) of the *Indian Partnership Act, 1932* explicitly authorize agreements among partners not to carry on competing business during the partnership or upon retirement/dissolution.
+5. **Annotation & Risk Classification Directive:**
+   - A non-compete clause must **not** be automatically tagged `critical` without verifying:
+     - Whether it operates during the term or post-termination.
+     - Whether it arises in an employment, sale-of-goodwill, partnership, or franchise context.
+   - Post-employment covenants are tagged `high` or `critical` (enforceability defect); goodwill sale covenants are evaluated contextually for reasonableness.
+
+---
+
+### 3.2 Governing Law, Arbitration Seat & Jurisdiction Clauses
 
 > [!IMPORTANT]
-> **Statutory Disentanglement: ICA 1872 § 28 vs Arbitration Act 1996 § 28:**
-> - **Section 28 of the Indian Contract Act, 1872** renders void agreements that absolutely restrict a party from enforcing contractual rights in ordinary tribunals, or that extinguish rights/curtail the limitation period. It does *not* invalidate arbitration agreements or choice of exclusive jurisdiction between two competent Indian courts (*Hakam Singh*, *ABC Laminart*).
-> - **Section 28 of the Arbitration and Conciliation Act, 1996** governs the *rules applicable to the substance of dispute*. Under Section 28(1)(a), in a domestic arbitration (where both parties are Indian), the arbitral tribunal is statutorily mandated to decide the dispute in accordance with the substantive law in force in India.
+> **Disentanglement of Key Conflict-of-Laws Concepts (TAX-122-02):**  
+> LegalAI strictly distinguishes six independent legal concepts:
+> 1. **Substantive Governing Law (Lex Causae):** The substantive law governing the merits of the contractual dispute.
+> 2. **Law of the Arbitration Agreement:** The law governing the formation, validity, and interpretation of the arbitration clause itself.
+> 3. **Curial Law / Lex Arbitri / Seat of Arbitration:** The legal domicile of the arbitration, determining supervisory court jurisdiction.
+> 4. **Physical Venue / Place of Hearings:** The convenient geographic location where hearings occur, distinct from the legal seat.
+> 5. **Court Jurisdiction:** The supervisory or enforcement jurisdiction of municipal courts.
+> 6. **Substantive Law Applicable to Dispute in Arbitration:** Governed by Section 28 of the Arbitration Act, 1996.
 
-#### Contextual Risk Scenarios:
-1. **Two Domestic Indian Parties Choosing Foreign Substantive Law (HIGH RISK / UNENFORCEABLE):**
-   - In *TDM Infrastructure (P) Ltd. v. UE Development India (P) Ltd. (2008) 14 SCC 271*, the Supreme Court held that under Section 28(1)(a) of the **Arbitration and Conciliation Act, 1996**, when both companies are incorporated in India, they have Indian nationality and cannot derogate from Indian substantive law in a domestic arbitration.
-   - *Risk Classification:* Tagged as `high` risk (enforceability defect; choice of foreign substantive law is severed, and Indian law applies). It is **not** automatically `critical` or void *ab initio* in its entirety.
-2. **Two Domestic Indian Parties Choosing a Foreign Seat of Arbitration (VALID):**
-   - In *PASL Wind Solutions (P) Ltd. v. GE Power Conversion India (P) Ltd. (2021) 7 SCC 1*, the Supreme Court held that two Indian companies can lawfully choose a foreign seat of arbitration (e.g., Singapore or London). The resulting foreign award is enforceable in India under Part II of the Arbitration Act.
+#### Contextual Legal Analysis:
+1. **Domestic Arbitration Between Indian Parties (Arbitration Act § 28(1)(a)):**
+   - Under Section 28(1)(a) of the **Arbitration and Conciliation Act, 1996**, in a domestic arbitration (where both parties are incorporated or resident in India), the arbitral tribunal is statutorily mandated to decide the dispute in accordance with the substantive law in force in India (*TDM Infrastructure (P) Ltd. v. UE Development India (P) Ltd. (2008) 14 SCC 271*).
+   - If two domestic Indian companies stipulate a foreign substantive governing law, that choice of foreign substantive law is inoperative and severable; the dispute remains governed by Indian substantive law.
+   - *Risk Classification:* Tagged as `high` risk (enforceability defect in choice of law; severed). It is **not** automatically `critical` or void *ab initio* in its entirety.
+2. **Domestic Parties Choosing a Foreign Seat of Arbitration (VALID):**
+   - In *PASL Wind Solutions (P) Ltd. v. GE Power Conversion India (P) Ltd. (2021) 7 SCC 1*, the Supreme Court held that two Indian companies can lawfully choose a foreign seat of arbitration (e.g., Singapore, London, Zurich). The resulting award is an international award enforceable in India under Part II of the Arbitration Act.
+   - Choosing a foreign seat does not violate Section 23 or 28 of the Indian Contract Act, 1872.
    - *Risk Classification:* Tagged as `medium` risk (higher costs and international enforcement procedures), not void or invalid.
-3. **Exclusive Jurisdiction Between Competent Indian Courts (VALID):**
-   - When two or more civil courts possess territorial and pecuniary jurisdiction over a contract, an agreement vesting exclusive jurisdiction in one of those competent courts is valid and does not violate Section 28 of the Indian Contract Act, 1872 (*Hakam Singh v. Gammon (India) Ltd. (1971) 1 SCC 286*).
+3. **Exclusive Court Jurisdiction Between Competent Indian Courts (VALID):**
+   - When two or more civil courts possess territorial and pecuniary jurisdiction over a contract, an agreement vesting exclusive jurisdiction in one of those competent courts is valid and does not violate Section 28 of the Indian Contract Act, 1872 (*Hakam Singh v. Gammon (India) Ltd. (1971) 1 SCC 286*; *A.B.C. Laminart v. A.P. Agencies (1989) 2 SCC 163*).
+   - Parties cannot confer jurisdiction on a court that inherently lacks subject-matter jurisdiction.
    - *Risk Classification:* `low` risk (standard procedural choice).
-4. **Cross-Border Commercial Contracts with Foreign Party (VALID):**
+4. **Cross-Border Commercial Contracts (At Least One Foreign Party):**
    - Where at least one party is incorporated or resident outside India, full party autonomy applies to choice of substantive law, seat, and jurisdiction (*Bharat Aluminium Co. v. Kaiser Aluminium Technical Services (2012) 9 SCC 552*).
+   - *Qualification:* Party autonomy is subject to mandatory Indian public policy, fundamental policy of Indian law, and statutory compliance (e.g., FEMA regulations, competition law).
    - *Risk Classification:* `low` or `medium` risk depending on forum accessibility.
 
 ---
@@ -161,12 +190,12 @@ LegalAI anchors all compliance checks directly to codified enactments:
 | `ICA-SEC-10` | Indian Contract Act, 1872 | Section 10: Essential elements | Free consent, competent parties, lawful consideration, lawful object. |
 | `ICA-SEC-11` | Indian Contract Act, 1872 | Section 11: Competence to contract | Majority, sound mind, not disqualified. Minor's agreement void *ab initio* (*Mohori Bibee*). |
 | `ICA-SEC-23` | Indian Contract Act, 1872 | Section 23: Lawful object/consideration | Unlawful if forbidden by law, fraudulent, injurious, immoral, or opposed to public policy. |
-| `ICA-SEC-27` | Indian Contract Act, 1872 | Section 27: Restraint of trade | Restraint on trade void. Post-employment void (*Percept D'Mark*); during employment valid (*Niranjan Golikari*). |
-| `ICA-SEC-28` | Indian Contract Act, 1872 | Section 28: Restraint of legal proceedings | Absolute restriction on litigation or curtailing statutory limitation period is void. Exclusive jurisdiction between competent courts valid (*Hakam Singh*). |
+| `ICA-SEC-27` | Indian Contract Act, 1872 | Section 27: Restraint of trade | Post-employment void (*Krishan Murgai*, *Percept D'Mark*); during employment valid (*Golikari*, *Gujarat Bottling*); goodwill exception valid. |
+| `ICA-SEC-28` | Indian Contract Act, 1872 | Section 28: Restraint of legal proceedings | Absolute restriction on litigation or curtailing limitation period void. Exclusive jurisdiction between competent courts valid (*Hakam Singh*). |
 | `ICA-SEC-56` | Indian Contract Act, 1872 | Section 56: Frustration & impossibility | Agreement to do impossible act void; subsequent impossibility without fault dissolves contract (*Satyabrata Ghose*). |
 | `ICA-SEC-73` | Indian Contract Act, 1872 | Section 73: Unliquidated damages | Compensation for natural, direct, foreseeable losses. **Actual proof of loss required.** Remote damages barred. |
-| `ICA-SEC-74` | Indian Contract Act, 1872 | Section 74: Liquidated damages & penalty | Court awards reasonable compensation not exceeding stipulated sum. Penalties unenforceable beyond reasonable pre-estimate (*Kailash Nath*). |
-| `ARB-SEC-28` | Arb. & Conciliation Act, 1996 | Section 28: Rules applicable to substance | Domestic arbitrations must apply Indian substantive law; domestic parties cannot contract out of Indian substantive law (*TDM Infrastructure*). Foreign seat valid (*PASL Wind*). |
+| `ICA-SEC-74` | Indian Contract Act, 1872 | Section 74: Liquidated damages & penalty | Reasonable compensation not exceeding stipulated sum. Proof of actual damage required unless impossible (*Kailash Nath*). |
+| `ARB-SEC-28` | Arb. & Conciliation Act, 1996 | Section 28: Rules applicable to substance | Domestic arbitrations must apply Indian substantive law (*TDM Infrastructure*). Foreign seat valid (*PASL Wind*). |
 | `DPDP-SEC-06`| DPDP Act, 2023 | Section 6: Consent conditions | Notice and free, specific, informed consent. *(Note: Phased commencement under Section 1(2))*. |
 | `CPA-SEC-2-46`| Consumer Protection Act, 2019 | Section 2(46): Unfair contract terms | Unilateral termination, excessive security deposits, imposing unreasonable penalties on consumers. |
 

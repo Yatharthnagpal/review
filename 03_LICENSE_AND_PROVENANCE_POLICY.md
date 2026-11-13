@@ -1,10 +1,10 @@
 # 03. License and Provenance Policy
 
 **Document ID:** `LEGALAI-DOC-DE-03`  
-**Version:** `1.2.1`  
+**Version:** `1.2.2`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Audited Date:** 2026-11-13  
-**Dependencies:** `INDEX.md`, `02_SOURCE_REGISTRY.md`, `13_DATA_PRIVACY_AND_GOVERNANCE.md`, `PHASE_1_2_1_EVIDENCE_REGISTER.md`
+**Dependencies:** `INDEX.md`, `02_SOURCE_REGISTRY.md`, `13_DATA_PRIVACY_AND_GOVERNANCE.md`, `PHASE_1_2_2_EVIDENCE_REGISTER.md`
 
 ---
 
@@ -34,7 +34,7 @@ Section 52(1)(q) of the *Copyright Act, 1957* exempts specific classes of govern
 > *(iii) the report of any committee, commission, council, board or other like body appointed by the Government if such report has been laid on the Table of the Legislature, unless the reproduction or publication of such report is prohibited by the Government;*  
 > *(iv) any judgment or order of a court, tribunal or other judicial authority, unless the reproduction or publication of such judgment or order is prohibited by the court, the tribunal or other judicial authority, as the case may be;"*
 
-### 2.1 Subclause-Specific Legal Analysis
+### 2.1 Subclause-Specific Legal Analysis & Technical Operations Disentanglement
 
 1. **Clause (i) — Official Gazette Material (Except Acts):**
    - Applies to statutory rules, regulations, orders, notifications, and gazette announcements published by Central or State Governments.
@@ -43,23 +43,28 @@ Section 52(1)(q) of the *Copyright Act, 1957* exempts specific classes of govern
 2. **Clause (ii) — Acts of a Legislature (The Commentary/Original Matter Condition):**
    - Reproduction or publication of an Act of a Legislature is exempt **only** *"subject to the condition that such Act is reproduced or published together with any commentary thereon or any other original matter"*.
    - A standalone republication of the bare statutory text of an Act *without* any accompanying commentary, analysis, annotations, or original matter does **not** fall within Section 52(1)(q)(ii).
-   - In LegalAI, Acts of the Legislature are ingested, chunked, and indexed alongside **original matter** (e.g., FIRAC structured metadata, clause classification labels, statutory risk scores, cross-references, and bilingual alignments). This integration satisfies the statutory condition of clause (ii).
-   - Standalone bulk redistribution of bare statutory text without accompanying original matter is restricted unless independently authorized under the Government Open Data License (GODL) of India Code.
+   - *LegalAI Arrangement Status:* LegalAI proposes to ingest, chunk, and index Acts of the Legislature alongside structured metadata, FIRAC analysis, clause classifications, and statutory risk scores. **However, whether programmatic metadata, structural segmentations, or algorithmic risk tags legally constitute "commentary thereon or any other original matter" within the meaning of Section 52(1)(q)(ii) has not been conclusively adjudicated by Indian courts.**  
+   - **Legal Review Gate:** The legal sufficiency of LegalAI's metadata arrangement under clause (ii) is designated as **`PENDING LEGAL REVIEW`** and requires formal written confirmation by qualified Indian copyright counsel before commercial deployment. Standalone bulk redistribution of bare statutory text without accompanying original matter remains restricted.
 3. **Clause (iii) — Government Reports:**
    - Reports of committees, commissions, or boards laid on the Table of the Legislature are non-infringing to reproduce unless explicitly prohibited by the Government.
 4. **Clause (iv) — Judicial Opinions & Orders (*Eastern Book Company* Doctrine):**
    - Judgments and orders of courts, tribunals, or judicial authorities are non-infringing to reproduce unless prohibited by the court or tribunal.
-   - In *Eastern Book Company v. D.B. Modak (2008) 1 SCC 1*, the Supreme Court held that the text of judgments is public and free for anyone to reproduce. However, headnotes, case summaries, editorial footnotes, and creative formatting introduced by private law reporters constitute original derivative literary works protected under Section 13(1)(a) of the Copyright Act.
-5. **Model Training & Commercial SaaS Boundaries:**
-   - Indian copyright law does not currently contain an express statutory text-and-data-mining (TDM) or artificial intelligence model-training exception.
-   - While intermediate reproduction for RAG indexing coupled with original analytical output falls within the principles of Section 52(1)(q)(ii) and fair dealing under Section 52(1)(a), commercial model weight distribution remains an evolving legal area.
-   - **Legal Counsel Dependency:** Deployment of proprietary model weights trained directly on large-scale third-party compilations requires formal review by qualified Indian legal counsel.
+   - In *Eastern Book Company v. D.B. Modak (2008) 1 SCC 1*, the Supreme Court held that the raw text of judgments is non-infringing and free for anyone to reproduce. However, headnotes, case summaries, editorial footnotes, and creative formatting introduced by private law reporters constitute original derivative literary works protected under Section 13(1)(a) of the Copyright Act.
+5. **Independent Evaluation of Technical Operations:**
+   Permission to perform one technical operation does not establish permission for another. Every operation is evaluated independently:
+   - **Ingestion & Raw Storage:** Lawful for public judicial opinions and gazetted rules; Acts of Legislature stored for internal reference.
+   - **Parsing, Transformation & Chunking:** Lawful intermediate processing for indexing.
+   - **Search Indexing & Embedding Generation:** Dense vector generation and hybrid BM25 indexing for semantic retrieval.
+   - **RAG Retrieval:** Contextual prompt injection into language models.
+   - **Model Training & Fine-Tuning:** Indian copyright law does not currently contain an express statutory text-and-data-mining (TDM) or commercial model-training exception (unlike UK CDPA § 29A or EU DSM Directive Arts. 3–4). **Section 52(1)(a) is fair dealing for private/personal use, research, criticism or review; it cannot be asserted as a settled blanket commercial AI training or RAG exception.** Commercial model fine-tuning on third-party compilations remains **`PENDING LEGAL REVIEW`**.
+   - **Redistribution:** Standalone redistribution of bare Acts without original matter is restricted.
+   - **Commercial SaaS Serving:** Value-added legal intelligence queries are permitted, provided underlying copyrighted editorial content is completely excluded.
 
 ```mermaid
 flowchart TD
     LegalDoc["Candidate Legal Material"] --> CategoryRouter{"Document Category Router"}
     
-    CategoryRouter -->|"Acts of Legislature"| T1["Tier 1: Acts of Legislature<br/>(§ 52(1)(q)(ii): Requires Commentary / Original Matter)"]
+    CategoryRouter -->|"Acts of Legislature"| T1["Tier 1: Acts of Legislature<br/>(§ 52(1)(q)(ii): Requires Commentary / Original Matter - PENDING REVIEW)"]
     CategoryRouter -->|"Official Gazette Rules/Orders"| T2["Tier 2: Official Gazette Material<br/>(§ 52(1)(q)(i): Non-infringing)"]
     CategoryRouter -->|"Raw Court Judgments"| T3["Tier 3: Judicial Opinions & Orders<br/>(§ 52(1)(q)(iv) & EBC: Non-infringing unless barred)"]
     CategoryRouter -->|"Editorial Annotations"| T4["Tier 4: Editorial Annotations & Treatises<br/>(Protected by Copyright § 13(1)(a) - PROHIBITED)"]
@@ -71,14 +76,56 @@ flowchart TD
 ### 2.2 Comprehensive Classification & Rights Matrix
 
 | Material Tier | Statutory Basis & Copyright Status | Source Terms & Boundary | Ingestion & Storage | Indexing & Embedding | Model Training | Redistribution | Commercial SaaS Serving |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1. Acts of Legislature** | § 52(1)(q)(ii) (conditioned on accompanying commentary or original matter). | Official portals (*India Code*). | **Allowed** | **Allowed** (Coupled with LegalAI original tags) | **Allowed** (Intermediate processing) | **Restricted** (Only with accompanying original matter) | **Allowed** (As part of value-added platform) |
-| **2. Gazette Rules / Orders** | § 52(1)(q)(i) (Non-infringing Official Gazette matter). | Central & State Gazettes (*egazette.gov.in*). | **Allowed** | **Allowed** | **Allowed** | **Allowed** | **Allowed** |
-| **3. Raw Court Judgments** | § 52(1)(q)(iv) & *Eastern Book Company* (Public record). | Official Court Portals (DigiSCR, e-Courts, High Court sites). | **Allowed** | **Allowed** | **Allowed** | **Allowed** (Subject to victim identity redactions) | **Allowed** (Value-added legal intelligence) |
+| :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **1. Acts of Legislature** | § 52(1)(q)(ii) (conditioned on accompanying commentary or original matter). | Official portals (*India Code*). | **Allowed** | **Conditional** (Original matter pairing pending legal review) | **Pending Legal Review** (No statutory TDM exception) | **Restricted** (Only with accompanying original matter) | **Conditional** (Value-added platform pending review) |
+| **2. Gazette Rules / Orders** | § 52(1)(q)(i) (Non-infringing Official Gazette matter). | Central & State Gazettes (*egazette.gov.in*). | **Allowed** | **Allowed** | **Pending Legal Review** | **Allowed** | **Allowed** |
+| **3. Raw Court Judgments** | § 52(1)(q)(iv) & *Eastern Book Company* (Non-infringing public record). | Official Court Portals (DigiSCR, e-Courts, High Court sites). | **Allowed** | **Allowed** | **Pending Legal Review** | **Allowed** (Subject to victim redaction) | **Allowed** (Value-added legal intelligence) |
 | **4. Editorial Annotations** | Protected under § 13(1)(a) (Original literary work). | Commercial law books & treatise commentaries. | **Prohibited** | **Prohibited** | **Prohibited** | **Prohibited** | **Prohibited** without express copyright license |
 | **5. Reporter Headnotes** | Protected under "Modicum of Creativity" standard (*Eastern Book Company*). | Law reports (SCC, AIR, SCR commercial headnotes). | **Prohibited** | **Prohibited** | **Prohibited** | **Prohibited** | **Prohibited** (Only raw judicial text permitted) |
 | **6. Commercial Databases** | Database compilation rights & contractual Terms of Service bars. | Proprietary portals (SCC Online, Manupatra, LexisNexis). | **Prohibited** | **Prohibited** | **Prohibited** | **Prohibited** | **Prohibited** (Bulk scraping contractually barred) |
 | **7. Private Translations** | Independent derivative copyright under § 13(1)(a) & § 14(a)(iv). | Unofficial private translations and publishers. | **Prohibited** | **Prohibited** | **Prohibited** | **Prohibited** | **Prohibited** (Must use official gazetted translations) |
+
+---
+
+### 2.3 CUAD & MAUD: Separation of Annotation Rights from Underlying Contracts
+
+> [!CRITICAL]
+> **Rights Separation Directive (LEG-122-02):**  
+> An open-source license applying to dataset annotations does **not** convey an open-source license to the underlying contracts. The Atticus Project explicitly disclaims warranting the copyright status of the underlying agreements.
+
+#### A. Dataset Annotations (CUAD & MAUD):
+- **Publisher:** The Atticus Project (Prof. Dan Hendrycks et al. for CUAD; The Atticus Project & ABA M&A Committee for MAUD).
+- **Release:** CUAD v1.0 (March 2021); MAUD v1.0 (2023).
+- **Confirmed License:** Creative Commons Attribution 4.0 International (`CC BY 4.0`).
+- **Attribution Requirement:** Mandatory citation of The Atticus Project and respective research publications.
+- **Permissions:** Annotation labels, question-answer pairs, and boundary spans may be freely stored, modified, redistributed, and used commercially under `CC BY 4.0`.
+
+#### B. Underlying Contract Documents:
+- **Source:** US Securities and Exchange Commission (SEC) EDGAR public regulatory filing system.
+- **Nature of Documents:** Material commercial contracts and merger agreements filed as public disclosure exhibits under SEC Regulation S-K.
+- **Licensing Status of Underlying Agreements:** The filing of a commercial agreement on SEC EDGAR fulfills a statutory corporate disclosure obligation; it does **not** dedicate the contract text to the global public domain or grant an unencumbered commercial license to third parties. The contracting parties retain underlying intellectual property and trade secret rights.
+- **LegalAI Operational Boundaries for Underlying Contracts:**
+  - *Collection & Ingestion:* Lawful for academic research and evaluation from public regulatory records.
+  - *Storage & Parsing:* Permitted for internal model benchmark development.
+  - *Embedding & Model Training:* Permitted under US fair use for academic models; commercial exploitation in downstream Indian jurisdictions without customer consent is **`NOT VERIFIED`**.
+  - *Redistribution of Raw Contracts:* **`RESTRICTED / NOT VERIFIED`** (Underlying full-text contracts will not be redistributed in raw unredacted form).
+  - *Commercial SaaS Serving:* Live contract analysis in LegalAI processes **user-uploaded customer agreements** under enterprise terms; underlying CUAD/MAUD contracts are restricted to benchmark evaluation.
+
+---
+
+### 2.4 India Code & Government Open Data License (GODL) Disentanglement
+
+> [!IMPORTANT]
+> **Source-Category Disentanglement (SRC-122-01):**  
+> The existence of the Government Open Data License (GODL) on `data.gov.in` does not establish that every document hosted on India Code is covered by GODL. Each material category has a distinct legal basis:
+
+1. **Central Acts of Parliament:** Governed by Section 52(1)(q)(ii) of the *Copyright Act, 1957*. Standalone bare reproduction is restricted unless accompanied by commentary or other original matter.
+2. **Subordinate Rules, Regulations & Orders:** Governed by Section 52(1)(q)(i) (Official Gazette matter other than Acts).
+3. **Official Gazette Notifications:** Governed by Section 52(1)(q)(i).
+4. **Government Reports laid before Parliament:** Governed by Section 52(1)(q)(iii) unless prohibited.
+5. **Portal UI, Search Index & Database Schema:** Governed by National Informatics Centre (NIC) terms / GODL India.
+6. **State Acts & Subordinate Legislation:** Subject to respective State Official Gazettes and Section 52(1)(q)(ii).
+7. **Hindi Translations:** Authoritative only when published in the Official Gazette under Presidential authority pursuant to Section 5(1) of the *Official Languages Act, 1963*; unofficial private translations remain copyrighted under Section 13(1)(a).
 
 ---
 

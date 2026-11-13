@@ -1,7 +1,7 @@
 # LegalAI Dataset Engineering Documentation
 
 **Document ID:** `LEGALAI-DOC-DE-INDEX`  
-**Version:** `1.2.1`  
+**Version:** `1.2.2`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Audited Date:** 2026-11-13  
 **Authors:** Senior AI Architect, Legal NLP Engineer, Data Engineer, ML Research Engineer  
@@ -42,20 +42,25 @@ docs/dataset-engineering/
 ├── 12_DATA_QUALITY_AND_VALIDATION.md       # Automated validation checks, Great Expectations, citation integrity tests
 ├── 13_DATA_PRIVACY_AND_GOVERNANCE.md       # PII scrubbing, POCSO/BNS anonymization, DPDP compliance, audit trails
 ├── 14_DATASET_IMPLEMENTATION_ROADMAP.md    # Transition roadmap from Phase 1 foundation to Phase 2 data engineering
-├── PHASE_1_1_CHANGELOG.md                  # Comprehensive record of Phase 1.1 revisions and evidence
-├── PHASE_1_1_ISSUE_REGISTER.md             # Consolidated tracking register of Phase 1.1 issues
-├── PHASE_1_1_VALIDATION_REPORT.md          # Automated & manual validation results for Phase 1.1
-├── PHASE_1_1_SIGNOFF.md                    # Phase 1.1 review sign-off checklist
+├── PHASE_1_1_CHANGELOG.md                  # Comprehensive record of Phase 1.1 revisions and evidence (Historical)
+├── PHASE_1_1_ISSUE_REGISTER.md             # Consolidated tracking register of Phase 1.1 issues (Historical)
+├── PHASE_1_1_VALIDATION_REPORT.md          # Automated & manual validation results for Phase 1.1 (Historical)
+├── PHASE_1_1_SIGNOFF.md                    # Phase 1.1 review sign-off checklist (Historical)
 ├── PHASE_1_2_EVIDENCE_REGISTER.md          # Primary evidence register (Phase 1.2 baseline)
 ├── PHASE_1_2_ISSUE_REGISTER.md             # 29-issue tracking register (Phase 1.2 baseline)
 ├── PHASE_1_2_VALIDATION_REPORT.md          # 7-pillar evaluation report (Phase 1.2 baseline)
 ├── PHASE_1_2_SIGNOFF.md                    # Acceptance criteria audit (Phase 1.2 baseline)
 ├── PHASE_1_2_CHANGELOG.md                  # Change history (Phase 1.2 baseline)
-├── PHASE_1_2_1_EVIDENCE_REGISTER.md        # Canonical reconciled evidence register (Phase 1.2.1)
-├── PHASE_1_2_1_ISSUE_REGISTER.md           # Critical legal & evidence issue register (Phase 1.2.1)
-├── PHASE_1_2_1_VALIDATION_REPORT.md        # Documentation vs operational validation report (Phase 1.2.1)
-├── PHASE_1_2_1_SIGNOFF.md                  # Human-gated technical and legal review checklist (Phase 1.2.1)
-└── PHASE_1_2_1_CHANGELOG.md                # Targeted remediation changelog (Phase 1.2.1)
+├── PHASE_1_2_1_EVIDENCE_REGISTER.md        # Canonical evidence ledger (Phase 1.2.1 baseline)
+├── PHASE_1_2_1_ISSUE_REGISTER.md           # Critical legal & evidence issue register (Phase 1.2.1 baseline)
+├── PHASE_1_2_1_VALIDATION_REPORT.md        # Dual-dimension validation report (Phase 1.2.1 baseline)
+├── PHASE_1_2_1_SIGNOFF.md                  # Technical and legal sign-off review (Phase 1.2.1 baseline)
+├── PHASE_1_2_1_CHANGELOG.md                # Remediation changelog (Phase 1.2.1 baseline)
+├── PHASE_1_2_2_EVIDENCE_REGISTER.md        # Canonical semantic evidence register (Phase 1.2.2 current)
+├── PHASE_1_2_2_ISSUE_REGISTER.md           # Final interpretation issue register (Phase 1.2.2 current)
+├── PHASE_1_2_2_VALIDATION_REPORT.md        # Comprehensive dual-dimension audit report (Phase 1.2.2 current)
+├── PHASE_1_2_2_SIGNOFF.md                  # Stakeholder sign-off and readiness gate (Phase 1.2.2 current)
+└── PHASE_1_2_2_CHANGELOG.md                # Exhaustive remediation changelog (Phase 1.2.2 current)
 ```
 
 ---
@@ -86,10 +91,10 @@ Every documented component has been audited against the actual source code in th
 
 ---
 
-## 4. Operational Boundaries (Phase 1.2.1 Governance)
+## 4. Operational Boundaries & Governance Directives
 
-1. **No Source Code Modification:** No files within `frontend/` or `backend/` are modified during Phase 1.2.1.
-2. **No Model Training:** Model pre-training, fine-tuning, and embedding retraining are strictly deferred to Phase 3.
-3. **No Bulk Ingestion:** Raw dataset downloads and heavy crawling are strictly deferred to Phase 2 pipelines.
-4. **License & Provenance Verification:** All dataset URLs, repository identifiers, licenses, and row counts are verified against upstream records or explicitly tagged with `NOT VERIFIED`, `CONDITIONAL`, or `UNKNOWN`.
-5. **Human Approval Checkpoint:** Phase 2 data engineering cannot begin without explicit independent stakeholder review and written sign-off from qualified Indian legal counsel and lead data architect.
+1. **Phase 2 Authorization Status:** **NOT AUTHORIZED**. Execution of Phase 2 data engineering, bulk harvesting, and pipeline buildout is strictly prohibited without explicit written sign-off from designated human stakeholders.
+2. **No Source Code Modification:** No application code within `frontend/` or `backend/` is modified during this phase.
+3. **No Model Training:** Model pre-training, fine-tuning, and embedding retraining are strictly deferred to Phase 3.
+4. **No Bulk Ingestion:** Raw dataset downloads and heavy crawling are strictly deferred to Phase 2 pipelines.
+5. **License & Provenance Verification:** All dataset permissions are evaluated independently for annotations vs underlying source documents; unverified rights remain explicitly marked `NOT VERIFIED` or `CONDITIONAL`.
