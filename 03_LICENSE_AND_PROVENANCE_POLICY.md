@@ -56,29 +56,34 @@ Section 52(1)(q) of the *Copyright Act, 1957* exempts specific classes of govern
 
 ---
 
-### 2.2 Judicial Precedents on AI Training & Section 52(1)(a) Fair Dealing (HIGH-1222-02)
+### 2.2 Judicial Precedents on AI Training & Section 52(1)(a) Fair Dealing (HIGH-1222-02, ANI-1222-01)
 
 #### 2.2.1 Analysis of Delhi High Court Interim Order in *ANI Media Pvt. Ltd. v. OpenAI Opco LLC* (24 July 2026)
-In *ANI Media Pvt. Ltd. v. OpenAI Opco LLC* (CS(COMM) 2026, Delhi High Court, interim order dated 24 July 2026; cited in Evidence Register as `EVID-LEG-09`), the High Court considered prima facie copyright infringement allegations arising from an AI company's automated web scraping and ingestion of copyrighted news content for LLM training:
-1. **Procedural Nature of the Order:** The order of 24 July 2026 was issued at the **interim injunction stage** and reflects a preliminary, *prima facie* procedural assessment based on the specific facts before the Court.
-2. **Statutory Fair Dealing Scope:** The Court evaluated arguments surrounding Section 52(1)(a) of the *Copyright Act, 1957*. Indian copyright law does not provide an open-ended "fair use" doctrine comparable to 17 U.S.C. § 107. Section 52(1)(a) is strictly confined to fair dealing for:
-   - Private or personal use, including research;
-   - Criticism or review;
-   - Reporting of current events and current affairs.
-3. **Unresolved Legal Questions:** The interim order **did not resolve or settle** whether commercial AI pretraining, continual pretraining, or commercial RAG ingestion constitute fair dealing or copyright infringement under Indian law. Crucial questions regarding model weight memorization, verbatim regurgitation, and database extraction remain pending before the High Court.
-4. **Policy Governance Directive for LegalAI:** The *ANI Media* proceedings confirm that **commercial AI training cannot be treated as an exempt fair dealing activity under settled Indian law**. Public availability or public record status of a text does not confer automatic commercial model-training authorization. Consequently, all model training (SFT and pretraining) on Indian legal materials is formally classified as **`CONDITIONAL ON INDEPENDENT LEGAL REVIEW`**.
+In *ANI Media Pvt. Ltd. v. OpenAI Opco LLC & Anr.*, **CS(COMM) 1028/2024** (High Court of Delhi, interim order dated 24 July 2026; cited in Evidence Register as `EVID-LEG-09`), the Court addressed copyright infringement claims arising from an AI company's automated ingestion, storage, and processing of news content for LLM training and retrieval-augmented generation (RAG):
+
+1. **Prima Facie Finding on Training Storage under Section 52(1)(a):**
+   - In its 24 July 2026 decision, the Delhi High Court arrived at a **prima facie finding that OpenAI's temporary storage of ANI's works for LLM training fell within the scope of Section 52(1)(a)** of the *Copyright Act, 1957* (fair dealing for research/study).
+   - On this *prima facie* basis, the Court **declined to grant interim injunctive relief** restraining OpenAI from storing or processing the works for AI training.
+2. **Prima Facie Finding on RAG Outputs:**
+   - The Court also examined ChatGPT's RAG outputs on the record before it and found that, based on the evidence presented, the **RAG outputs did not amount to copyright infringement**, as they generated synthesized answers and factual summaries rather than reproducing substantial verbatim portions of ANI's proprietary articles.
+3. **Crucial Procedural Qualification (Interim Order vs. Final Decision):**
+   - **Interim Interlocutory Nature:** The Court's observations were made strictly at the **interim injunction stage** under Order XXXIX Rules 1 & 2 of the Code of Civil Procedure, 1908.
+   - **Not a Final Adjudication on the Merits:** These interim findings **do not constitute a final decision or settled precedent** in the underlying commercial suit. The question of whether commercial, for-profit AI model training and pretraining on massive protected corpora constitute copyright infringement remains subject to full trial and final determination. Crucial legal and factual issues—including model weight memorization, potential verbatim regurgitation under specialized prompting, and commercial database extraction—await definitive trial adjudication.
+4. **Prudent Governance Policy for LegalAI:**
+   - Although the interim order provides preliminary judicial support suggesting that training storage may qualify under § 52(1)(a) and that synthesized RAG outputs are non-infringing, **the interim, contested nature of the decision precludes treating commercial AI training as settled law in India**.
+   - Consequently, LegalAI maintains a conservative risk posture: all commercial pretraining, supervised fine-tuning, and commercial RAG serving of legal materials remain classified as **`CONDITIONAL ON INDEPENDENT LEGAL REVIEW`**.
 
 ---
 
-### 2.3 Comprehensive Classification & 10-Operation Rights Matrix (HIGH-1222-01)
+### 2.3 Comprehensive Classification & 10-Operation Rights Matrix (HIGH-1222-01, LIC-1222-01)
 
 Every operation performed on legal material is evaluated independently across the 10 canonical data operations:
 
-| Material Tier | Statutory Basis & Copyright Status | Source Terms & Boundary | Op-01 to Op-05 (Processing & Embed) | Op-06 (Commercial RAG Serving) | Op-07 & Op-08 (Model Training / SFT) | Op-09 (Model Weights) | Op-10 (Redistribution) |
+| Material Tier | Statutory Basis & Copyright Status | Source Terms & Boundary | Op-01 to Op-05 (Processing & Embed) | Op-06 (Commercial RAG Serving) | Op-07 & Op-08 (Model Training / SFT) | Op-09 (Model Weights Distribution) | Op-10 (Redistribution) |
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **1. Central Acts of Legislature** | § 52(1)(q)(ii) (conditioned on accompanying commentary or original matter). | Official portals (*India Code* `EVID-SRC-07`). | **PASS** | **Conditional** (Commentary pairing pending review) | **Pending Legal Review** (No statutory TDM exception) | **Pending Legal Review** | **Restricted** (Only with accompanying original matter) |
+| **1. Central Acts of Legislature** | § 52(1)(q)(ii) (conditioned on accompanying commentary or original matter). | Official portals (*India Code* `EVID-SRC-07`). | **PASS** | **Conditional** (Commentary pairing pending review) | **Pending Legal Review** (Interim *ANI* precedent pending final decree) | **Pending Legal Review** | **Restricted** (Only with accompanying original matter) |
 | **2. Gazette Rules / Orders** | § 52(1)(q)(i) (Non-infringing Official Gazette matter). | Central & State Gazettes (*egazette.gov.in*). | **PASS** | **PASS** | **Pending Legal Review** | **Pending Legal Review** | **PASS** (With official attribution) |
-| **3. Raw Court Judgments** | § 52(1)(q)(iv) & *Eastern Book Company* (Non-infringing public record). | Official Court Portals (DigiSCR `EVID-SRC-13`, AWS SC `EVID-SRC-08`, AWS HC `EVID-SRC-09`). | **PASS** | **Conditional** (Requires PII/BNS § 73 redaction; commercial serving pending review) | **Pending Legal Review** (Public status does not imply training license) | **Pending Legal Review** | **PASS** (Verbatim text only; victim identity redacted) |
+| **3. Raw Court Judgments** | § 52(1)(q)(iv) & *Eastern Book Company* (Non-infringing public record). | Official Court Portals (DigiSCR `EVID-SRC-13`, AWS SC `EVID-SRC-08`, AWS HC `EVID-SRC-09`). | **PASS** | **Conditional** (Requires PII/BNS § 73 redaction; commercial serving pending review) | **Pending Legal Review** (Interim *ANI* precedent; trial pending) | **Pending Legal Review** | **PASS** (Verbatim text only; victim identity redacted) |
 | **4. Editorial Annotations & Treatises** | Protected under § 13(1)(a) (Original literary work). | Commercial law books & treatise commentaries. | **PROHIBITED** | **PROHIBITED** | **PROHIBITED** | **PROHIBITED** | **PROHIBITED** without express written license |
 | **5. Reporter Headnotes & Synopses** | Protected under "Modicum of Creativity" standard (*Eastern Book Company*). | Law reports (SCC, AIR, commercial SCR headnotes). | **PROHIBITED** | **PROHIBITED** | **PROHIBITED** | **PROHIBITED** | **PROHIBITED** (Only raw judicial text permitted) |
 | **6. Commercial Legal Databases** | Database compilation rights & contractual Terms of Service bars. | Proprietary portals (SCC Online, Manupatra, LexisNexis). | **PROHIBITED** | **PROHIBITED** | **PROHIBITED** | **PROHIBITED** | **PROHIBITED** (Bulk scraping contractually barred) |
@@ -96,7 +101,8 @@ Every operation performed on legal material is evaluated independently across th
 - **Publisher:** The Atticus Project (Prof. Dan Hendrycks et al. for CUAD; The Atticus Project & ABA M&A Committee for MAUD).
 - **Confirmed License:** Creative Commons Attribution 4.0 International (`CC BY 4.0`).
 - **Attribution Requirement:** Mandatory citation of The Atticus Project and respective research publications.
-- **Permissions:** Annotation labels, question-answer pairs, and boundary spans may be freely stored, modified, redistributed, and used commercially under `CC BY 4.0`.
+- **Permissions for Annotations:** Annotation labels, question-answer pairs, and boundary spans may be freely stored, modified, redistributed, and used commercially under `CC BY 4.0`.
+- **Model Weight Licensing Boundary (LIC-1222-01):** Permission to train upon `CC BY 4.0` annotations **does not automatically establish a settled legal conclusion that resulting model weights are freely redistributable or unencumbered**. Model weight intellectual property status, particularly when trained on hybrid legal data or fine-tuned on proprietary enterprise architectures, remains subject to independent legal clearance. Model weight redistribution (Op-09) is classified as **`CONDITIONAL ON INDEPENDENT LEGAL REVIEW`**.
 
 #### B. Underlying Contract Documents (SEC EDGAR Filings):
 - **Source:** US Securities and Exchange Commission (SEC) EDGAR public regulatory filing system.

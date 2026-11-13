@@ -169,15 +169,17 @@ In compliance with **EVID-122-01**, every evidence entry provides semantic align
 
 ### EVID-LEG-09: Delhi High Court Interim Order in *ANI Media Pvt. Ltd. v. OpenAI Opco LLC* (24 July 2026)
 * **Claim ID:** `CLAIM-LEG-09`
-* **Claim:** The Delhi High Court's interim order in *ANI Media v. OpenAI* evaluated prima facie fair dealing arguments under Section 52(1)(a) of the Copyright Act, 1957 in the context of automated web crawling and AI training. The order was an interim procedural determination on specific facts; it does not settle the legality of AI training, pretraining, commercial RAG, or weight distribution under Indian law, nor does it establish an open-ended commercial AI fair dealing exception.
-* **Primary Authority:** *ANI Media Pvt. Ltd. v. OpenAI Opco LLC*, CS(COMM) 2026, High Court of Delhi, Interim Order dated 24 July 2026; Copyright Act, 1957, Section 52(1)(a).
-* **Official URL:** High Court of Delhi Case Portal / `https://delhihighcourt.nic.in/`
+* **Claim:** In *ANI Media v. OpenAI*, the Delhi High Court made a prima facie finding that OpenAI's temporary storage of ANI's works for LLM training fell within Section 52(1)(a) of the Copyright Act, 1957, and declined interim injunctive relief. It also found on the evidence before it that ChatGPT's RAG outputs did not amount to copyright infringement. These findings are interlocutory and interim, not a final decision on the merits of the suit. Commercial model training and commercial RAG continue to require legal review.
+* **Primary Authority:** *ANI Media Pvt. Ltd. v. OpenAI Opco LLC & Anr.*, CS(COMM) 1028/2024, High Court of Delhi, Interim Order dated 24 July 2026; Copyright Act, 1957, Section 52(1)(a).
+* **Official URL:** High Court of Delhi Case Portal / `https://delhihighcourt.nic.in/` | `https://indiankanoon.org/doc/`
 * **Access Date:** 2026-11-13
 * **What the Source Establishes:** 
-  1. The Delhi High Court is actively adjudicating the boundaries of copyright infringement, web crawling, and LLM training under Section 52(1)(a) of the Indian Copyright Act.
-  2. The proceedings confirm that Indian copyright law lacks an express statutory TDM exception, and fair dealing claims under Section 52(1)(a) are subject to contested, fact-specific judicial scrutiny.
-* **What the Source Does NOT Establish:** The interim order does **not** establish a definitive final precedent, nor does it create a blanket authorization for commercial AI model training, fine-tuning, embedding generation, or commercial RAG serving of copyrighted content.
-* **Verification Status:** **PASS (Procedural Authority Audited) / CONDITIONAL (Substantive AI Training Legality Pending Final Judgment & Legal Review)**
+  1. The Delhi High Court arrived at a *prima facie* finding that temporary storage of copyrighted text for LLM training fell within the scope of Section 52(1)(a) fair dealing for research.
+  2. The Court declined interim injunctive relief to restrain AI training storage.
+  3. The Court found, on the record and evidence presented, that RAG outputs generating factual summaries did not constitute copyright infringement.
+  4. These findings are interlocutory and procedural, decided under Order XXXIX Rules 1 & 2 CPC at the interim stage.
+* **What the Source Does NOT Establish:** The interim order does **not** constitute a final decision or binding judgment on the merits. It does **not** settle the legality of large-scale commercial AI training, model-weight memorization, verbatim regurgitation, or commercial database extraction, all of which remain pending trial in the suit.
+* **Verification Status:** **PASS (Interim Judicial Authority Audited) / CONDITIONAL (Commercial AI Legality Pending Final Decree & Legal Review)**
 * **Related Documents:** `03_LICENSE_AND_PROVENANCE_POLICY.md`, `02_SOURCE_REGISTRY.md`.
 
 ---

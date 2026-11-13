@@ -1,20 +1,33 @@
 #!/usr/bin/env python3
 """
-LegalAI Documentation and Evidence Integrity Audit Script
-=========================================================
+LegalAI Documentation, Reference & Evidence Structural Integrity Audit Script
+=============================================================================
 
 Repository: https://github.com/Yatharthnagpal/review
 Project: LegalAI — Indian Legal Intelligence Platform
-Audit Scope: Phase 1.2.2 / Phase 1.2.2.1 Documentation Suite
+Audit Scope: Phase 1.2.2.1 / Phase 1.2.2.2 Documentation Suite
 
-This script performs an exhaustive, deterministic validation of:
-1. Canonical documentation files existence on disk (15 core specifications).
-2. Cross-file markdown link resolution across all specifications and governance docs.
+GOVERNANCE CLARIFICATION & SCOPE BOUNDARY:
+------------------------------------------
+This script is an automated STRUCTURAL AND REFERENTIAL INTEGRITY AUDIT TOOL.
+It deterministically verifies:
+1. Presence of all 15 canonical specification documents on disk.
+2. Recursive resolution of all cross-file markdown links (using rglob).
 3. Evidence ID definitions in the canonical Evidence Register.
-4. Evidence ID references across all specifications and governance artifacts.
-5. Semantic alignment of Acceptance Criteria (AC-01 to AC-15) to dedicated Evidence IDs.
-6. Detection of orphaned evidence entries (evidence defined but never cited).
-7. Validation of documentation path references in sign-off artifacts against actual files on disk.
+4. Comprehensive citation scanning across all specifications and governance docs.
+5. Detection of undefined evidence citations (FAIL condition).
+6. Detection of orphaned evidence entries (defined but never cited) (FAIL condition).
+7. Validation of documentation path references in sign-off matrices against actual files.
+8. Enforced completeness check that all 15 Acceptance Criteria (AC-01 to AC-15) are audited.
+9. Structural mapping checks ensuring ACs reference designated evidence records.
+
+IMPORTANT LEGAL DISCLAIMER:
+---------------------------
+Passing this structural audit confirms referential integrity, document existence,
+and citation consistency. It DOES NOT constitute substantive legal clearance or
+independent human validation that a statutory provision or case law authority
+legally justifies commercial deployment, model training, or SaaS operations.
+All substantive legal conclusions remain subject to independent human legal review.
 
 Requirements:
     Python 3.9+ (Standard Library only: pathlib, re, sys, json, argparse)
@@ -71,7 +84,7 @@ AUTHORITATIVE_AC_EVIDENCE_MAP = {
 
 
 def extract_version_tuple(filename: str) -> Tuple[int, ...]:
-    """Extracts numeric version tuple from file names like PHASE_1_2_2_1_SIGNOFF.md -> (1, 2, 2, 1)."""
+    """Extracts numeric version tuple from file names like PHASE_1_2_2_2_SIGNOFF.md -> (1, 2, 2, 2)."""
     nums = re.findall(r"\d+", filename)
     return tuple(int(x) for x in nums) if nums else (0,)
 
@@ -93,13 +106,14 @@ class DocIntegrityAuditor:
         self.missing_canonical_specs: List[str] = []
         self.invalid_signoff_doc_refs: List[Tuple[str, str]] = []
         self.semantic_mapping_errors: List[str] = []
+        self.orphaned_evidence: List[str] = []
 
     def run_full_audit(self) -> Dict:
-        """Executes all integrity checks in sequence."""
+        """Executes all structural and referential integrity checks in sequence."""
         self._check_canonical_specs()
         self._find_primary_artifacts()
         self._parse_evidence_register()
-        self._scan_all_citations()
+        self._scan_all_citations_recursive()
         self._audit_signoff_document()
         self._check_semantic_ac_mappings()
         self._detect_orphaned_evidence()
@@ -132,7 +146,7 @@ class DocIntegrityAuditor:
             self.primary_signoff_file = matching_so[0] if matching_so else None
 
         if not self.primary_register_file:
-            # Sort by version tuple descending: e.g. (1, 2, 2, 1) > (1, 2, 2) > (1, 2, 1) > (1, 2) > (1, 1)
+            # Sort by version tuple descending: (1, 2, 2, 2) > (1, 2, 2, 1) > (1, 2, 2) > (1, 2, 1) > (1, 1)
             evidence_files.sort(key=lambda p: extract_version_tuple(p.name), reverse=True)
             self.primary_register_file = evidence_files[0]
 
@@ -157,12 +171,12 @@ class DocIntegrityAuditor:
                     if ev_id not in self.defined_evidence:
                         self.defined_evidence[ev_id] = name
 
-    def _scan_all_citations(self):
-        """Scans all markdown files in docs_dir for evidence citations and cross-file markdown links."""
+    def _scan_all_citations_recursive(self):
+        """Recursively scans all markdown files in docs_dir (including nested directories) for evidence citations and links."""
         ev_citation_pattern = re.compile(r"EVID-[A-Z]+-[0-9]{2}")
         file_link_pattern = re.compile(r"\[([^\]]+)\]\(([^)]+\.md)(?:#[^)]*)?\)")
 
-        for md_path in self.docs_dir.glob("*.md"):
+        for md_path in self.docs_dir.rglob("*.md"):
             with open(md_path, "r", encoding="utf-8") as f:
                 content = f.read()
 
@@ -212,7 +226,7 @@ class DocIntegrityAuditor:
                     }
 
     def _check_semantic_ac_mappings(self):
-        """Verifies semantic correctness of evidence IDs mapped to each Acceptance Criterion."""
+        """Verifies structural and semantic alignment of evidence IDs mapped to each Acceptance Criterion."""
         for ac_id, rules in AUTHORITATIVE_AC_EVIDENCE_MAP.items():
             if ac_id not in self.ac_mappings:
                 continue
@@ -243,25 +257,36 @@ class DocIntegrityAuditor:
 
     def _detect_orphaned_evidence(self) -> List[str]:
         """Detects evidence IDs defined in the register but never cited across documents."""
-        orphaned = []
+        self.orphaned_evidence = []
         for ev_id in self.defined_evidence:
             citing_files = self.evidence_citations.get(ev_id, set())
             non_register_citations = {f for f in citing_files if "EVIDENCE_REGISTER" not in f}
             if not non_register_citations:
-                orphaned.append(ev_id)
-        return orphaned
+                self.orphaned_evidence.append(ev_id)
+        return self.orphaned_evidence
 
     def _generate_report(self) -> Dict:
-        """Assembles audit results into a structured dictionary."""
-        orphaned = self._detect_orphaned_evidence()
+        """Assembles audit results into a structured dictionary with rigorous PASS conditions."""
         undefined_citations = set(self.evidence_citations.keys()) - set(self.defined_evidence.keys())
+        expected_ac_count = len(AUTHORITATIVE_AC_EVIDENCE_MAP)
+        actual_ac_count = len(self.ac_mappings)
 
+        # RATIONALE FOR RIGOROUS PASS CONDITION:
+        # 1. Zero missing canonical specs (15/15)
+        # 2. Zero broken markdown links across recursive files
+        # 3. Zero invalid document references in signoff matrices
+        # 4. Zero semantic mapping errors in ACs
+        # 5. Zero undefined evidence citations
+        # 6. Zero orphaned evidence IDs (must be cited in at least one spec)
+        # 7. Exact enforcement of all 15 AC criteria parsed from sign-off
         passed = (
             len(self.missing_canonical_specs) == 0
             and len(self.broken_links) == 0
             and len(self.invalid_signoff_doc_refs) == 0
             and len(self.semantic_mapping_errors) == 0
             and len(undefined_citations) == 0
+            and len(self.orphaned_evidence) == 0
+            and actual_ac_count == expected_ac_count
         )
 
         return {
@@ -274,16 +299,19 @@ class DocIntegrityAuditor:
             "total_defined_evidence_ids": len(self.defined_evidence),
             "defined_evidence_ids": sorted(list(self.defined_evidence.keys())),
             "undefined_evidence_cited": sorted(list(undefined_citations)),
-            "orphaned_evidence_ids": sorted(orphaned),
+            "orphaned_evidence_ids": sorted(self.orphaned_evidence),
             "broken_markdown_links": self.broken_links,
             "invalid_signoff_doc_references": self.invalid_signoff_doc_refs,
             "semantic_ac_mapping_errors": self.semantic_mapping_errors,
-            "audited_ac_criteria_count": len(self.ac_mappings),
+            "audited_ac_criteria_count": actual_ac_count,
+            "expected_ac_criteria_count": expected_ac_count,
         }
 
 
 def main():
-    parser = argparse.ArgumentParser(description="LegalAI Documentation & Evidence Integrity Audit")
+    parser = argparse.ArgumentParser(
+        description="LegalAI Documentation, Reference & Evidence Structural Integrity Audit"
+    )
     parser.add_argument(
         "--docs-dir",
         type=Path,
@@ -294,7 +322,7 @@ def main():
         "--target-version",
         type=str,
         default=None,
-        help="Explicit version to audit (e.g. '1.2.2.1' or '1.2.2')",
+        help="Explicit version to audit (e.g. '1.2.2.2' or '1.2.2.1')",
     )
     parser.add_argument("--json", action="store_true", help="Output results as raw JSON")
     args = parser.parse_args()
@@ -306,7 +334,7 @@ def main():
         print(json.dumps(report, indent=2))
     else:
         print("=" * 80)
-        print(" LEGALAI DOCUMENTATION & EVIDENCE INTEGRITY AUDIT REPORT")
+        print(" LEGALAI DOCUMENTATION & EVIDENCE STRUCTURAL INTEGRITY AUDIT")
         print("=" * 80)
         print(f"Target Directory:          {report['docs_dir']}")
         print(f"Audited Evidence Register: {report['primary_evidence_register']}")
@@ -326,7 +354,7 @@ def main():
             print(f"    Orphaned IDs:             {report['orphaned_evidence_ids']}")
 
         print(f"\nSign-off & Reference Verification:")
-        print(f"  Audited AC Criteria:        {report['audited_ac_criteria_count']} / 15")
+        print(f"  Audited AC Criteria:        {report['audited_ac_criteria_count']} / {report['expected_ac_criteria_count']}")
         print(f"  Invalid Doc References:     {len(report['invalid_signoff_doc_references'])}")
         for ac_id, doc_ref in report["invalid_signoff_doc_references"]:
             print(f"    - {ac_id}: referenced nonexistent file '{doc_ref}'")
@@ -339,6 +367,9 @@ def main():
         for src, target in report["broken_markdown_links"]:
             print(f"    - in {src}: link to '{target}' does not resolve")
 
+        print("=" * 80)
+        print(" NOTE: This is a structural/referential audit. Substantive legal conclusions")
+        print("       and statutory compliance require independent human legal review.")
         print("=" * 80)
 
     sys.exit(0 if report["audit_passed"] else 1)

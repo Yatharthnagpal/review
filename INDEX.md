@@ -1,7 +1,7 @@
 # LegalAI Dataset Engineering Documentation
 
 **Document ID:** `LEGALAI-DOC-DE-INDEX`  
-**Version:** `1.2.2.1`  
+**Version:** `1.2.2.2`  
 **Status:** Canonical Audited Master Specification — Pending Independent Technical and Legal Review  
 **Audited Date:** 2026-11-13  
 **Authors:** Senior AI Architect, Legal NLP Engineer, Data Engineer, ML Research Engineer  
@@ -62,11 +62,16 @@ docs/dataset-engineering/
 ├── PHASE_1_2_2_VALIDATION_REPORT.md        # Comprehensive dual-dimension audit report (Phase 1.2.2 historical)
 ├── PHASE_1_2_2_SIGNOFF.md                  # Stakeholder sign-off and readiness gate (Phase 1.2.2 historical)
 ├── PHASE_1_2_2_CHANGELOG.md                # Exhaustive remediation changelog (Phase 1.2.2 historical)
-├── PHASE_1_2_2_1_EVIDENCE_REGISTER.md      # Authoritative 27-record semantic evidence ledger (Phase 1.2.2.1 active)
-├── PHASE_1_2_2_1_ISSUE_REGISTER.md         # Evidence integrity & legal permissions register (Phase 1.2.2.1 active)
-├── PHASE_1_2_2_1_VALIDATION_REPORT.md      # Deterministic script execution & audit report (Phase 1.2.2.1 active)
-├── PHASE_1_2_2_1_SIGNOFF.md                # Authoritative AC-01 to AC-15 sign-off matrix (Phase 1.2.2.1 active)
-└── PHASE_1_2_2_1_CHANGELOG.md              # Remediation audit changelog (Phase 1.2.2.1 active)
+├── PHASE_1_2_2_1_EVIDENCE_REGISTER.md      # Semantic evidence ledger (Phase 1.2.2.1 historical)
+├── PHASE_1_2_2_1_ISSUE_REGISTER.md         # Evidence integrity & legal permissions register (Phase 1.2.2.1 historical)
+├── PHASE_1_2_2_1_VALIDATION_REPORT.md      # Deterministic script execution & audit report (Phase 1.2.2.1 historical)
+├── PHASE_1_2_2_1_SIGNOFF.md                # AC-01 to AC-15 sign-off matrix (Phase 1.2.2.1 historical)
+├── PHASE_1_2_2_1_CHANGELOG.md              # Remediation audit changelog (Phase 1.2.2.1 historical)
+├── PHASE_1_2_2_2_EVIDENCE_REGISTER.md      # Authoritative 27-record semantic evidence ledger (Phase 1.2.2.2 active)
+├── PHASE_1_2_2_2_ISSUE_REGISTER.md         # Precision legal interpretation & tooling register (Phase 1.2.2.2 active)
+├── PHASE_1_2_2_2_VALIDATION_REPORT.md      # Hardened structural audit & validation report (Phase 1.2.2.2 active)
+├── PHASE_1_2_2_2_SIGNOFF.md                # Authoritative AC-01 to AC-15 sign-off matrix (Phase 1.2.2.2 active)
+└── PHASE_1_2_2_2_CHANGELOG.md              # Remediation audit changelog (Phase 1.2.2.2 active)
 
 scripts/
 └── audit_docs_integrity.py                 # Deterministic documentation, link, evidence & sign-off integrity audit script

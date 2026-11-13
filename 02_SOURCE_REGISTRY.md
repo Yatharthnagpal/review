@@ -88,7 +88,7 @@ Every source ingested or evaluated by LegalAI is audited against 10 distinct tec
     - *Op-06 (RAG Serving):* **PASS** (Annotations may be retrieved with attribution).
     - *Op-07 (Supervised Fine-Tuning):* **PASS** (Permitted for clause extraction and classification).
     - *Op-08 (Pretraining):* **PASS** (Permitted).
-    - *Op-09 (Model Weights):* **PASS** (Permitted with attribution in model card).
+    - *Op-09 (Model Weights Distribution):* **CONDITIONAL ON LEGAL REVIEW** (LIC-1222-01: CC BY 4.0 covers annotations; downstream model weight copyright and unencumbered commercial distribution status is an evolving legal question requiring counsel sign-off).
     - *Op-10 (Redistribution):* **PASS** (Permitted with CC BY 4.0 notice).
   - **B. Underlying Contract Documents (SEC EDGAR Filings) — `SRC-CONT-CUAD-01-C`:**
     - *Origin:* Material corporate agreements filed as exhibits under SEC Regulation S-K.
@@ -117,7 +117,9 @@ Every source ingested or evaluated by LegalAI is audited against 10 distinct tec
   - **A. Dataset Annotations (Atticus Project & ABA) — `SRC-CONT-MAUD-01-A`:**
     - *License:* Creative Commons Attribution 4.0 International (`CC BY 4.0`).
     - *Op-01 to Op-07 (Processing, SFT, QA):* **PASS** (Permitted with attribution).
-    - *Op-08 to Op-10 (Training, Model Weights, Redistribution):* **PASS** (Permitted with CC BY 4.0 attribution).
+    - *Op-08 (Pretraining):* **PASS** (Permitted).
+    - *Op-09 (Model Weights Distribution):* **CONDITIONAL ON LEGAL REVIEW** (LIC-1222-01: Model weight copyright status requires formal legal assessment).
+    - *Op-10 (Redistribution):* **PASS** (Permitted with CC BY 4.0 attribution).
   - **B. Underlying Merger Agreements (SEC EDGAR Filings) — `SRC-CONT-MAUD-01-C`:**
     - *Origin:* Public merger agreements filed on SEC EDGAR.
     - *Source Rights:* Corporate disclosure exhibits; underlying rights retained by filing parties; unwarranted by Atticus Project.
@@ -315,9 +317,9 @@ The table below provides the authoritative operational status across all 10 tech
 
 | Source ID | Short Name | Op-01 Coll | Op-02 Stor | Op-03 Parse | Op-04 Index | Op-05 Embed | Op-06 RAG | Op-07 SFT | Op-08 Pretrain | Op-09 Weights | Op-10 Redist | Composite Status | Pipeline Ingestion Rule |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| `SRC-CONT-CUAD-01-A` | CUAD Annotations | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | **PASS** | Approved for training & QA classification (CC BY 4.0) |
+| `SRC-CONT-CUAD-01-A` | CUAD Annotations | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | COND | PASS | **PASS / COND** | Approved for training (CC BY 4.0); model weights COND on review |
 | `SRC-CONT-CUAD-01-C` | CUAD Underlying Contracts | COND | COND | COND | COND | COND | REST | COND | COND | COND | PROHIB | **CONDITIONAL** | Internal benchmark quarantine only; no commercial serving/redist |
-| `SRC-CONT-MAUD-01-A` | MAUD Annotations | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | **PASS** | Approved for training & deal point analysis (CC BY 4.0) |
+| `SRC-CONT-MAUD-01-A` | MAUD Annotations | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | COND | PASS | **PASS / COND** | Approved for training (CC BY 4.0); model weights COND on review |
 | `SRC-CONT-MAUD-01-C` | MAUD Underlying Contracts | COND | COND | COND | COND | COND | PROHIB | COND | COND | COND | PROHIB | **CONDITIONAL** | Internal benchmark quarantine only |
 | `SRC-EXCL-ACORD-01` | ACORD Standards | PROHIB| PROHIB| PROHIB| PROHIB| PROHIB| PROHIB| PROHIB| PROHIB| PROHIB| PROHIB| **EXCLUDED** | **Excluded / Commercial copyright** |
 | `SRC-STAT-INCODE-01` | India Code Central Acts | PASS | PASS | PASS | PASS | PASS | COND | COND | COND | COND | REST | **CONDITIONAL** | Approved (Commentary condition & TDM pending legal review) |
