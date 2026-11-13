@@ -1,11 +1,11 @@
 # 04. Canonical Data Schemas
 
 **Document ID:** `LEGALAI-DOC-DE-04`  
-**Version:** `1.2.0`  
+**Version:** `1.2.1`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Audited Date:** 2026-11-13  
 **Framework:** Pydantic v2.10+ / JSON Schema Draft 2020-12 (with Draft-07 Compatibility Specification)  
-**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `backend/app/models/schemas.py`, `PHASE_1_2_EVIDENCE_REGISTER.md`
+**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `backend/app/models/schemas.py`, `PHASE_1_2_1_EVIDENCE_REGISTER.md`
 
 ---
 
@@ -173,7 +173,10 @@ class ContractRiskRecord(CanonicalBaseRecord):
     clause_id: str = Field(..., description="example_id of the associated ContractClauseRecord")
     risk_title: str = Field(..., description="Short risk identifier e.g., 'Post-Termination Restraint of Trade'")
     risk_severity: RiskLevel = Field(..., description="Canonical risk level")
-    risk_score: float = Field(..., ge=0.0, le=100.0, description="0-100 numerical risk index")
+    risk_score: float = Field(..., ge=0.0, le=100.0, description="0-100 numerical risk index (legal_risk_score)")
+    model_confidence: float = Field(default=1.0, ge=0.0, le=1.0, description="Model or rule prediction certainty")
+    evidence_completeness: float = Field(default=1.0, ge=0.0, le=1.0, description="Context sufficiency index")
+    review_required: bool = Field(default=False, description="Flag indicating human-in-the-loop review needed")
     perspective: PerspectiveLens = Field(default=PerspectiveLens.NEUTRAL, description="Perspective lens applied")
     affected_party: AffectedParty = Field(..., description="Which party bears the disproportionate risk")
     risk_reasons: List[str] = Field(..., min_length=1, description="Analytical justification points")

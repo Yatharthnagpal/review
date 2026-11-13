@@ -1,11 +1,11 @@
 # 11. Hugging Face Datasets & Hub Pipeline
 
 **Document ID:** `LEGALAI-DOC-DE-11`  
-**Version:** `1.2.0`  
+**Version:** `1.2.1`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Audited Date:** 2026-11-13  
 **Framework:** Hugging Face `datasets` $\ge 2.18$ / `pyarrow` $\ge 14.0$  
-**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `PHASE_1_2_ISSUE_REGISTER.md`, `PHASE_1_2_EVIDENCE_REGISTER.md`
+**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `PHASE_1_2_1_EVIDENCE_REGISTER.md`
 
 ---
 

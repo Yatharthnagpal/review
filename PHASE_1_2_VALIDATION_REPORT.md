@@ -152,3 +152,4 @@ flowchart TD
 1. Written confirmation from independent Indian legal counsel verifying statutory classifications (`LEG-01` through `LEG-04`) and licensing assumptions (`SRC-02`, `SRC-04`).
 2. Authentication of standalone Hugging Face releases for Atticus A-CoRD (`SRC-01`) and LegalTransEn (`SRC-03`), or confirmation of alternative primary repositories.
 3. Execution of Sprint 2.3 empirical benchmarks to measure actual MinHash duplicate false-positive rates (`ML-01`) and validate the 0.88 cross-lingual cosine threshold (`ML-02`).
+

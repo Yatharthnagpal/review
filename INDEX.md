@@ -1,7 +1,7 @@
 # LegalAI Dataset Engineering Documentation
 
 **Document ID:** `LEGALAI-DOC-DE-INDEX`  
-**Version:** `1.2.0`  
+**Version:** `1.2.1`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Audited Date:** 2026-11-13  
 **Authors:** Senior AI Architect, Legal NLP Engineer, Data Engineer, ML Research Engineer  
@@ -46,46 +46,50 @@ docs/dataset-engineering/
 ├── PHASE_1_1_ISSUE_REGISTER.md             # Consolidated tracking register of Phase 1.1 issues
 ├── PHASE_1_1_VALIDATION_REPORT.md          # Automated & manual validation results for Phase 1.1
 ├── PHASE_1_1_SIGNOFF.md                    # Phase 1.1 review sign-off checklist
-├── PHASE_1_2_EVIDENCE_REGISTER.md          # Authoritative statutory, source, and codebase evidence records (Phase 1.2)
-├── PHASE_1_2_ISSUE_REGISTER.md             # Consolidated 29-issue register with resolution status (Phase 1.2)
-├── PHASE_1_2_VALIDATION_REPORT.md          # Evidence-based evaluation report across all 7 pillars (Phase 1.2)
-├── PHASE_1_2_SIGNOFF.md                    # Comprehensive criteria audit and readiness determination (Phase 1.2)
-└── PHASE_1_2_CHANGELOG.md                  # Document-by-document audit and change history (Phase 1.2)
+├── PHASE_1_2_EVIDENCE_REGISTER.md          # Primary evidence register (Phase 1.2 baseline)
+├── PHASE_1_2_ISSUE_REGISTER.md             # 29-issue tracking register (Phase 1.2 baseline)
+├── PHASE_1_2_VALIDATION_REPORT.md          # 7-pillar evaluation report (Phase 1.2 baseline)
+├── PHASE_1_2_SIGNOFF.md                    # Acceptance criteria audit (Phase 1.2 baseline)
+├── PHASE_1_2_CHANGELOG.md                  # Change history (Phase 1.2 baseline)
+├── PHASE_1_2_1_EVIDENCE_REGISTER.md        # Canonical reconciled evidence register (Phase 1.2.1)
+├── PHASE_1_2_1_ISSUE_REGISTER.md           # Critical legal & evidence issue register (Phase 1.2.1)
+├── PHASE_1_2_1_VALIDATION_REPORT.md        # Documentation vs operational validation report (Phase 1.2.1)
+├── PHASE_1_2_1_SIGNOFF.md                  # Human-gated technical and legal review checklist (Phase 1.2.1)
+└── PHASE_1_2_1_CHANGELOG.md                # Targeted remediation changelog (Phase 1.2.1)
 ```
 
 ---
 
 ## 3. Codebase Verification & Component Alignment
 
-Every documented component has been audited against the actual source code in the repository. Status definitions:
-- **Existing:** Verified in the current source code (`backend/app/` or `frontend/src/`).
-- **Partial:** Exists in code but lacks full documented functionality.
-- **Planned:** Described in architectural documentation; not yet implemented in code.
-- **Missing:** Required by feature scope but not found in repository.
-- **Unverified:** Insufficient evidence to determine status.
+Every documented component has been audited against the actual source code in the repository.
 
-| Codebase Component | Implementation Location | Verified Status | Notes on Existing vs. Target Capability |
-| :--- | :--- | :--- | :--- |
-| **Pydantic API Schemas** | `backend/app/models/schemas.py` | **Existing** | Uses `RiskLevel` and `ClauseType`. Canonical schemas in `04` harmonize directly with these enums. |
-| **SQLAlchemy ORM Models** | `backend/app/models/db_models.py` | **Existing** | Tables: `users`, `contracts`, `analyses`, `chat_sessions`, `chat_messages`, `audit_logs`. |
-| **Vector DB (Qdrant)** | `backend/app/services/vector_db.py` | **Existing** | Local Qdrant instance; collections `clauses` and `statutes` (384-dim, FastEmbed `bge-small-en-v1.5`). |
-| **Audit Logging Service** | `backend/app/services/audit.py` | **Existing** | Function `log_audit(db, action, details, user_id, ip_address)` records to `audit_logs` table. |
-| **Statute Compliance Engine** | `backend/app/services/compliance.py` | **Existing** | Heuristic regex rules checking Indian Contract Act, 1872 (Sections 10, 23, 27, 28, 56, 73-74). |
-| **Clause Classifier** | `backend/app/services/classifier.py` | **Existing** | Heuristic keyword/regex classifier (`CLAUSE_RULES`) covering 21 clause categories. |
-| **Risk Analyzer** | `backend/app/services/risk_analyzer.py` | **Existing** | Heuristic rules calculating risk score and levels (`low`, `medium`, `high`, `critical`). |
-| **Entity & Obligation Extractor** | `backend/app/services/extractor.py` | **Existing** | Heuristic regex parser extracting parties, obligations, dates, values, and deadlines. |
-| **RAG Retrieval Engine** | `backend/app/services/nlu.py` + `vector_db.py` | **Partial** | Basic Qdrant cosine similarity search + prompt injection into Groq LLM; lacks hybrid dense-sparse reranking and citation cross-verification. |
-| **Multi-Agent Orchestration** | `backend/app/services/nlu.py` | **Partial** | Sequential prompt-chaining function (`generate_chat_response` runs Analyst $\rightarrow$ Compliance $\rightarrow$ Counsel); lacks autonomous agent state machines, tool loops, and independent worker routing. |
-| **Model Fine-Tuning Pipeline**| N/A | **Planned** | Transformer fine-tuning (Legal-BERT) is scheduled for Phase 3; no training scripts currently exist. |
-| **Bilingual Hindi RAG** | N/A | **Planned** | Currently embeddings are English-only (`bge-small-en-v1.5`). Multilingual embedding (`bge-m3`) scheduled for Phase 2/3. |
-| **Parchment Frontend** | `frontend/src/` | **Existing** | React 18 + Vite 6 UI with Parchment theme, dual reading modes, perspective lens selector, and review modals. |
+> [!NOTE]
+> **Independent Reproducibility Scope (CODE-121-01):**
+> Codebase inspections recorded below reflect local workspace audits of `c:\Users\Yatharth nagpal\Desktop\LegalAI-main\backend\app\`. Because this documentation repository (`https://github.com/Yatharthnagpal/review`) is hosted independently of the private application source code, independent third-party reproducibility is designated as **LOCAL OBSERVATION ONLY / PENDING APPLICATION REPOSITORY ACCESS**.
+
+| Codebase Component | Implementation Location | Local Inspection Status | Independent Reproducibility | Notes on Existing vs. Target Capability |
+| :--- | :--- | :---: | :---: | :--- |
+| **Pydantic API Schemas** | `backend/app/models/schemas.py` | **Existing** | Local Observation | Uses `RiskLevel` and `ClauseType`. Canonical schemas in `04` harmonize directly with these enums. |
+| **SQLAlchemy ORM Models** | `backend/app/models/db_models.py` | **Existing** | Local Observation | Tables: `users`, `contracts`, `analyses`, `chat_sessions`, `chat_messages`, `audit_logs`. |
+| **Vector DB (Qdrant)** | `backend/app/services/vector_db.py` | **Existing** | Local Observation | Local Qdrant instance; collections `clauses` and `statutes` (384-dim, FastEmbed `bge-small-en-v1.5`). |
+| **Audit Logging Service** | `backend/app/services/audit.py` | **Existing** | Local Observation | Function `log_audit(db, action, details, user_id, ip_address)` records to `audit_logs` table. |
+| **Statute Compliance Engine** | `backend/app/services/compliance.py` | **Existing** | Local Observation | Heuristic regex rules checking Indian Contract Act, 1872 (Sections 10, 23, 27, 28, 56, 73-74). |
+| **Clause Classifier** | `backend/app/services/classifier.py` | **Existing** | Local Observation | Heuristic keyword/regex classifier (`CLAUSE_RULES`) covering 21 clause categories. |
+| **Risk Analyzer** | `backend/app/services/risk_analyzer.py` | **Existing** | Local Observation | Heuristic rules calculating risk score and levels (`low`, `medium`, `high`, `critical`). |
+| **Entity & Obligation Extractor** | `backend/app/services/extractor.py` | **Existing** | Local Observation | Heuristic regex parser extracting parties, obligations, dates, values, and deadlines. |
+| **RAG Retrieval Engine** | `backend/app/services/nlu.py` + `vector_db.py` | **Partial** | Local Observation | Basic Qdrant cosine similarity search + prompt injection into Groq LLM; lacks hybrid dense-sparse reranking and citation cross-verification. |
+| **Multi-Agent Orchestration** | `backend/app/services/nlu.py` | **Partial** | Local Observation | Sequential prompt-chaining function (`generate_chat_response` runs Analyst $\rightarrow$ Compliance $\rightarrow$ Counsel); lacks autonomous agent state machines, tool loops, and independent worker routing. |
+| **Model Fine-Tuning Pipeline**| N/A | **Planned** | N/A | Transformer fine-tuning (Legal-BERT) is scheduled for Phase 3; no training scripts currently exist. |
+| **Bilingual Hindi RAG** | N/A | **Planned** | N/A | Currently embeddings are English-only (`bge-small-en-v1.5`). Multilingual embedding (`bge-m3`) scheduled for Phase 2/3. |
+| **Parchment Frontend** | `frontend/src/` | **Existing** | Local Observation | React 18 + Vite 6 UI with Parchment theme, dual reading modes, perspective lens selector, and review modals. |
 
 ---
 
-## 4. Operational Boundaries (Phase 1.2 Governance)
+## 4. Operational Boundaries (Phase 1.2.1 Governance)
 
-1. **No Source Code Modification:** No files within `frontend/` or `backend/` are modified during Phase 1.2.
+1. **No Source Code Modification:** No files within `frontend/` or `backend/` are modified during Phase 1.2.1.
 2. **No Model Training:** Model pre-training, fine-tuning, and embedding retraining are strictly deferred to Phase 3.
 3. **No Bulk Ingestion:** Raw dataset downloads and heavy crawling are strictly deferred to Phase 2 pipelines.
-4. **License & Provenance Verification:** All dataset URLs, repository identifiers, licenses, and row counts are verified against upstream records or explicitly tagged with `NOT VERIFIED` or `CONDITIONAL`.
-5. **Independent Review Checkpoint:** Phase 2 data engineering cannot begin without explicit independent stakeholder review and sign-off on the Phase 1.2 documentation.
+4. **License & Provenance Verification:** All dataset URLs, repository identifiers, licenses, and row counts are verified against upstream records or explicitly tagged with `NOT VERIFIED`, `CONDITIONAL`, or `UNKNOWN`.
+5. **Human Approval Checkpoint:** Phase 2 data engineering cannot begin without explicit independent stakeholder review and written sign-off from qualified Indian legal counsel and lead data architect.

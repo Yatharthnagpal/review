@@ -1,11 +1,11 @@
 # 13. Data Privacy and Governance
 
 **Document ID:** `LEGALAI-DOC-DE-13`  
-**Version:** `1.2.0`  
+**Version:** `1.2.1`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Audited Date:** 2026-11-13  
-**Statutory Framework:** DPDP Act 2023 (Phased Commencement) / POCSO Act 2012 / BNS 2023 (§§ 72 & 73) / Family Courts Act 1984 (§ 11)  
-**Dependencies:** `INDEX.md`, `03_LICENSE_AND_PROVENANCE_POLICY.md`, `backend/app/services/audit.py`, `backend/app/models/db_models.py`, `PHASE_1_2_ISSUE_REGISTER.md`, `PHASE_1_2_EVIDENCE_REGISTER.md`
+**Statutory Framework:** DPDP Act 2023 (Phased Commencement) / POCSO Act 2012 (§§ 24(5), 27, 33(7)) / BNS 2023 (§§ 72 & 73) / Family Courts Act 1984 (§ 11)  
+**Dependencies:** `INDEX.md`, `03_LICENSE_AND_PROVENANCE_POLICY.md`, `backend/app/services/audit.py`, `backend/app/models/db_models.py`, `PHASE_1_2_1_EVIDENCE_REGISTER.md`
 
 ---
 
@@ -46,23 +46,31 @@ flowchart TD
 
 ## 3. Statutory Non-Disclosure Enactments (Tier 1 & Tier 2)
 
-### 3.1 POCSO Act, 2012 (Sections 24(5), 33(7), 23, 37)
-- **Section 24(5):** Imposes an affirmative duty on police and medical officers to protect the child's identity from public disclosure.
-- **Section 33(7):** Mandates that the Special Court shall ensure the child's identity is not disclosed in judicial proceedings.
-- **Section 23:** Prescribes criminal penalties for media or individuals publishing identifying particulars.
-- **Enforcement:** Mandatory automated masking:
-  $$\text{Target Pattern} \longrightarrow \text{"[REDACTED\_CHILD\_VICTIM]" or "Child\_X"}$$
+### 3.1 POCSO Act, 2012 (Sections 24(5), 27, 33(7), 23)
+- **Section 24(5) (Police Officer's Responsibility):**  
+  > *"The police officer shall also ensure that the identity of the child is protected from the public media, unless for reasons to be recorded in writing, the Special Court has permitted such disclosure in the interest of the child."*  
+  This statutory duty is specifically imposed upon the **police officer** during the investigation and statement recording phase.
+- **Section 27 (Medical Examination):** Medical examination of the child is conducted independently pursuant to Section 27 and Section 164A CrPC / Section 184 BNSS, ensuring the child's dignity and presence of parents/custodians.
+- **Section 33(7) (Special Court's Responsibility):** Mandates that the Special Court shall ensure that the identity of the child is not disclosed at any time during the course of trial.
+- **Section 23:** Prescribes criminal penalties for media organizations or individuals publishing identifying particulars.
+- **Enforcement in LegalAI:** Automated regex and entity filters tag any document referencing POCSO for complete redaction of minor party names and family descriptors to `[REDACTED_CHILD_VICTIM]` or `Child_X`.
 
 ### 3.2 Bharatiya Nyaya Sanhita, 2023: Sections 72 and 73
-- **Section 72, BNS 2023 (formerly IPC Section 228A):** Prohibits printing or publishing the name or any matter disclosing the identity of a victim of sexual offenses (Sections 64 to 71).
-- **Section 73, BNS 2023:** Prohibits printing or publishing any matter relating to court proceedings conducted *in camera* without prior written court permission.
-- **Enforcement:** Mandatory masking of victim and complainant identities (`Victim X`, `Prosecutrix`) and exclusion of *in-camera* transcripts unless certified as an unsealed legal precedent on points of law.
+- **Section 72, BNS 2023 (formerly IPC Section 228A):**  
+  Prohibits printing or publishing the name or any matter disclosing the identity of any victim of sexual offenses (Sections 64 to 71).
+- **Section 73, BNS 2023 (Printing / Publishing Court Proceedings Without Permission):**  
+  > *"Whoever prints or publishes any matter in respect for any proceeding before a court with respect to an offence referred to in section 72 without previous permission of such court, shall be punished with imprisonment of either description for a term which may extend to two years and shall also be liable to fine.*  
+  > *Explanation.—The printing or publishing of the judgment of any High Court or the Supreme Court does not amount to an offence within the meaning of this section."*
+- **Specific Statutory Scope:** Section 73 applies **strictly to proceedings relating to offences referred to in Section 72 BNS**. It does **not** create a blanket penal bar on every in-camera proceeding under every Indian enactment (such as matrimonial suits or commercial arbitrations).
+- **Enforcement in LegalAI:** Mandatory masking of victim names (`Victim X`, `Prosecutrix`) and total exclusion of trial proceedings relating to Section 72 offences. Published appellate judgments of High Courts and the Supreme Court deciding questions of law are permitted under the statutory Explanation, subject to strict victim pseudonymization.
 
 ### 3.3 Juvenile Justice (Care and Protection of Children) Act, 2015 (Section 74)
 - Absolute bar on disclosing the name, address, school, or any information leading to identification of a child in conflict with law or child in need of care.
 
-### 3.4 Family Courts Act, 1984 (Section 11) — 7-Step Eligibility Screening Protocol
-Section 11 allows in-camera hearings if the Family Court so desires or either party desires; it does not automatically seal all matrimonial records across India. To ensure strict compliance without over-redacting public legal precedent:
+### 3.4 Family Courts Act, 1984 (Section 11) — In-Camera Scope & 7-Step Screening Protocol
+- **Statutory Standard:** Section 11 provides that proceedings *may* be held in camera if the Family Court so desires, and *shall* be so held if either party requests.
+- **Statutory Distinction:** Section 11 primarily governs the procedural conduct of the proceedings (excluding the general public from the courtroom). It does **not** itself establish an automatic penal ban on publishing reported appellate High Court or Supreme Court judgments on questions of Hindu or Special Marriage law, unless an express court non-publication/sealing order exists or child identity is involved.
+- **LegalAI Internal Screening Protocol (Tier 5 Policy):** To avoid exposing sensitive personal matrimonial strife, LegalAI enforces a 7-step review protocol:
 
 ```mermaid
 flowchart TD
@@ -80,7 +88,7 @@ flowchart TD
 ```
 
 1. **Step 1 (Origin Verification):** Confirm source is an authorized official law report or certified copy, not an unauthorized leak.
-2. **Step 2 (In-Camera Screening):** Inspect trial docket and judgment text for express invocations of Section 11 or sealed-record directives. If sealed, exclude entirely.
+2. **Step 2 (In-Camera & Sealing Screening):** Inspect trial docket and judgment text for express invocations of Section 11 or sealed-record directives. If sealed, exclude entirely.
 3. **Step 3 (Party Anonymity Assessment):** Identify if High Court or Supreme Court directed party initials (e.g., *X v. Y*).
 4. **Step 4 (Minor & Matrimonial Anonymization Pass):** Apply automated and human redaction to names of minor children, school details, private residential addresses, personal phone numbers, and specific bank maintenance figures.
 5. **Step 5 (Legal Proposition Extraction):** Isolate pure legal principles (e.g., statutory interpretation of Section 13B Hindu Marriage Act, jurisdiction under Family Courts Act Section 7).
@@ -137,13 +145,11 @@ INDIAN_PII_PATTERNS = {
 The decision to host all LegalAI databases (PostgreSQL, Qdrant vector store, Parquet data lakes) within AWS `ap-south-1` (Mumbai) is an **internal corporate security and risk-management policy (Tier 5)**, designed to maintain data sovereignty, reduce compliance overhead, and minimize cross-border legal exposure.
 
 ### 5.3 Phased Commencement Notice
-The DPDP Act was published in the Gazette of India on August 11, 2023. Under Section 1(2), different provisions come into force on dates appointed by Central Government notification. As of November 2025, substantive operational chapters remain subject to phased transition rules. LegalAI implements core principles (data minimization, purpose limitation, right to erasure) as foundational architecture in advance of formal deadlines.
+The DPDP Act was published in the Gazette of India on August 11, 2023. Under Section 1(2), different provisions come into force on dates appointed by Central Government notification. Substantive operational chapters remain subject to phased transition rules. LegalAI implements core principles (data minimization, purpose limitation, right to erasure) as foundational architecture in advance of formal deadlines.
 
 ---
 
 ## 6. End-to-End 12-Stage Data Lifecycle & Lineage
-
-To ensure absolute traceability and verifiable provenance from source harvest to permanent deletion:
 
 ```mermaid
 flowchart LR

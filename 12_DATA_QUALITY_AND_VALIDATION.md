@@ -1,11 +1,11 @@
 # 12. Data Quality and Validation
 
 **Document ID:** `LEGALAI-DOC-DE-12`  
-**Version:** `1.2.0`  
+**Version:** `1.2.1`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Audited Date:** 2026-11-13  
 **Framework:** Great Expectations / Pydantic v2 / Automated CI Checks  
-**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `05_LABEL_TAXONOMY.md`, `PHASE_1_2_ISSUE_REGISTER.md`, `PHASE_1_2_EVIDENCE_REGISTER.md`
+**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `05_LABEL_TAXONOMY.md`, `PHASE_1_2_1_EVIDENCE_REGISTER.md`
 
 ---
 

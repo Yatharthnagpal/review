@@ -155,3 +155,4 @@ Inspected codebase root: `c:\Users\Yatharth nagpal\Desktop\LegalAI-main\backend\
 * **Evidence Check:** Threshold was proposed without an empirical threshold sweep across parallel Indic corpora.
 * **Resolution:** Reclassified 0.88 as a **provisional hypothesis**. Documented an empirical calibration protocol evaluating candidate thresholds (0.80, 0.84, 0.88, 0.92) against human-annotated parallel pairs during Phase 2. Marked metric status as **NOT RUN**.
 * **Verification Finding:** **PASS**.
+

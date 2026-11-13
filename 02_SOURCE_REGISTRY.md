@@ -1,10 +1,10 @@
 # 02. Source Registry
 
 **Document ID:** `LEGALAI-DOC-DE-02`  
-**Version:** `1.2.0`  
+**Version:** `1.2.1`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Audited Date:** 2026-11-13  
-**Dependencies:** `INDEX.md`, `03_LICENSE_AND_PROVENANCE_POLICY.md`, `PHASE_1_2_EVIDENCE_REGISTER.md`
+**Dependencies:** `INDEX.md`, `03_LICENSE_AND_PROVENANCE_POLICY.md`, `PHASE_1_2_1_EVIDENCE_REGISTER.md`
 
 ---
 
@@ -14,7 +14,7 @@ This registry documents all candidate datasets, raw repositories, and official g
 
 > [!IMPORTANT]
 > **Data Integrity and Licensing Boundaries:**
-> 1. In accordance with the Phase 1.2 Governance Framework, no source repository, license, or statistic is assumed. Where exact metrics, licensing terms, or direct download links are unconfirmed or subject to upstream change, they are explicitly tagged as **`NOT VERIFIED`**.
+> 1. In accordance with the Phase 1.2.1 Governance Framework, no source repository, license, or statistic is assumed. Where exact metrics, licensing terms, or direct download links are unconfirmed or subject to upstream change, they are explicitly tagged as **`NOT VERIFIED`** or **`UNKNOWN`**.
 > 2. **Public Availability Fallacy:** Public availability of a web portal, API, or scraping script **does not** imply permission to download, redistribute, or use data commercially.
 > 3. **Separation of Distinct Corpora:** The Atticus Project's open contract review corpus (**A-CoRD**) is strictly decoupled from the commercial insurance standards organization (**ACORD**).
 > 4. **No Blanket Licensing:** Datasets originating from different creators or publishers retain their individual licenses and must not be aggregated under a single blanket license.
@@ -31,15 +31,16 @@ This registry documents all candidate datasets, raw repositories, and official g
 * **Repository ID:** `TheAtticusProject/cuad`
 * **Release / Version:** v1.0 (NeurIPS 2021 Release)
 * **Access URL:** `https://www.atticusprojectai.org/cuad` | Hugging Face: `https://huggingface.co/datasets/TheAtticusProject/cuad`
-* **License:** Creative Commons Attribution 4.0 International (`CC BY 4.0`)
+* **License (Annotations):** Creative Commons Attribution 4.0 International (`CC BY 4.0`)
+* **Underlying Source Documents:** 510 commercial contracts extracted from SEC EDGAR filings (public corporate disclosure filings under US Securities Exchange Act of 1934).
 * **License Evidence:** Published in dataset repository `LICENSE` file and NeurIPS 2021 proceedings paper.
 * **Dataset Size:** 510 commercial contracts; 13,101 question-answer annotations; ~1.5 GB raw PDF/text.
-* **Commercial Use:** Allowed (with attribution per CC BY 4.0).
+* **Commercial Use:** Allowed for annotations (with attribution per CC BY 4.0); SEC EDGAR underlying documents are public filings.
 * **Redistribution:** Allowed (with attribution per CC BY 4.0).
 * **Training Use:** Allowed (full fine-tuning and evaluation rights).
 * **Verification Date:** 2026-11-13
 * **Verification Status:** **PASS**
-* **Outstanding Legal Concerns:** US corporate law drafting (Delaware/NY); requires adaptation to Indian Contract Act standards.
+* **Outstanding Legal Concerns:** US corporate law drafting (Delaware/NY); requires domain adaptation to Indian Contract Act standards.
 
 ### 2.2 MAUD (Merger Agreement Understanding Dataset)
 * **Source ID:** `SRC-CONT-MAUD-01`
@@ -48,7 +49,8 @@ This registry documents all candidate datasets, raw repositories, and official g
 * **Repository ID:** `TheAtticusProject/maud`
 * **Release / Version:** v1.0 (2023 Release)
 * **Access URL:** `https://www.atticusprojectai.org/maud` | Hugging Face: `https://huggingface.co/datasets/TheAtticusProject/maud`
-* **License:** Creative Commons Attribution 4.0 International (`CC BY 4.0`)
+* **License (Annotations):** Creative Commons Attribution 4.0 International (`CC BY 4.0`)
+* **Underlying Source Documents:** 152 public merger agreements from SEC EDGAR filings.
 * **License Evidence:** Published on Hugging Face dataset card and project website.
 * **Dataset Size:** 152 merger agreements; ~47,000 annotations spanning 92 deal point questions.
 * **Commercial Use:** Allowed (with attribution).
@@ -136,15 +138,15 @@ This registry documents all candidate datasets, raw repositories, and official g
 * **Dataset Name:** Indian Supreme Court Judgments (1950–2023)
 * **Repository ID:** AWS Open Data Registry (`indian-legal-judgments-sc`)
 * **Release / Version:** 2023 Archive Snapshot
-* **Access URL:** `https://registry.opendata.aws/` (S3 endpoint: pending network verification in Phase 2)
+* **Access URL:** `https://registry.opendata.aws/` (S3 endpoint: pending network verification in Sprint 2.1)
 * **License:** Public Domain per Section 52(1)(q)(iv) of the Indian Copyright Act, 1957 / Open Government Data (OGD) License India
-* **License Evidence:** Statutory public domain status established by *Eastern Book Company v. D.B. Modak (2008) 1 SCC 1*.
-* **Dataset Size:** 35,000+ full-text judgments; ~50 GB raw text/PDF.
-* **Commercial Use:** Allowed (raw judicial text is in the public domain).
+* **License Evidence:** Statutory non-infringement status established by Section 52(1)(q)(iv) and *Eastern Book Company v. D.B. Modak (2008) 1 SCC 1*.
+* **Dataset Size:** Provisional Estimate: ~35,000 full-text judgments; ~50 GB raw text/PDF (Exact manifest unverified pending S3 sync).
+* **Commercial Use:** Allowed for raw judicial text (*Eastern Book Company*).
 * **Redistribution:** Allowed (subject to statutory victim anonymization orders under BNS § 72, POCSO § 33(7)).
-* **Training Use:** Allowed.
+* **Training Use:** Allowed for model training.
 * **Verification Date:** 2026-11-13
-* **Verification Status:** **CONDITIONAL** (Legal public domain status verified; exact S3 bucket ARN requires network sync in Phase 2).
+* **Verification Status:** **CONDITIONAL** (Legal basis verified; exact S3 bucket ARN and record manifest pending operational sync in Sprint 2.1).
 * **Outstanding Legal Concerns:** OCR quality on historical judgments (pre-1975) requires CER validation.
 
 ### 3.4 AWS Registry of Open Data: Indian High Court Judgments
@@ -156,12 +158,12 @@ This registry documents all candidate datasets, raw repositories, and official g
 * **Access URL:** `https://registry.opendata.aws/`
 * **License:** Public Domain per Section 52(1)(q)(iv) Copyright Act, 1957 / OGD India
 * **License Evidence:** Statutory non-infringement exception under Section 52(1)(q)(iv).
-* **Dataset Size:** ~2.5 million+ records across 25 High Courts (Unverified exact disk size, estimated ~400 GB).
+* **Dataset Size:** Provisional Estimate: ~2.5 million records across 25 High Courts (Unverified exact disk size, estimated ~400 GB).
 * **Commercial Use:** Allowed for raw judicial text.
 * **Redistribution:** Allowed subject to High Court electronic record rules and victim protection orders.
 * **Training Use:** Allowed.
 * **Verification Date:** 2026-11-13
-* **Verification Status:** **CONDITIONAL**
+* **Verification Status:** **CONDITIONAL** (Pending operational endpoint confirmation and volume filtering).
 * **Outstanding Legal Concerns:** Immense volume; contains routine interlocutory orders requiring aggressive substantive filtering.
 
 ### 3.5 Official India Code (Government of India)
@@ -171,12 +173,12 @@ This registry documents all candidate datasets, raw repositories, and official g
 * **Repository ID:** Official Government Portal
 * **Release / Version:** Live Government Portal (Continuously updated)
 * **Access URL:** `https://www.indiacode.nic.in/`
-* **License:** Public Domain per Section 52(1)(q)(i) & (ii) of the Indian Copyright Act, 1957 / Open Government Data (OGD) License India
-* **License Evidence:** Section 52(1)(q) statutory exception for legislative enactments published in Official Gazettes.
+* **License:** Government Open Data License (GODL) India / Subject to Copyright Act Section 52(1)(q)
+* **License Evidence:** Section 52(1)(q)(i) for gazetted rules/orders, and Section 52(1)(q)(ii) for Acts of Legislature (conditioned on accompanying commentary or original matter).
 * **Dataset Size:** 850+ Central Acts, thousands of state enactments and subordinate rules.
-* **Commercial Use:** Allowed (accurate reproduction without misleading alterations).
-* **Redistribution:** Allowed.
-* **Training Use:** Allowed.
+* **Commercial Use:** Permitted when integrated into LegalAI's value-added platform with original analytical metadata; standalone commercial resale of bare Acts without commentary requires caution under § 52(1)(q)(ii).
+* **Redistribution:** Permitted with original matter / commentary.
+* **Training Use:** Permitted for RAG indexing and embedding.
 * **Verification Date:** 2026-11-13
 * **Verification Status:** **PASS**
 * **Outstanding Legal Concerns:** Amendment tracking requires temporal versioning (e.g., transition from IPC 1860 to Bharatiya Nyaya Sanhita 2023).
@@ -264,11 +266,12 @@ This registry documents all candidate datasets, raw repositories, and official g
 * **Repository ID:** `https://github.com/Law-AI/summarization`
 * **Release / Version:** SIGIR 2019 / EMNLP 2021 Release
 * **Access URL:** `https://github.com/Law-AI/summarization`
-* **License:** Academic Research Open Source (Apache 2.0 / MIT Compatible)
+* **Code License:** Apache License 2.0 / MIT Compatible
+* **Underlying Documents License:** Supreme Court of India judgments (public record under Section 52(1)(q)(iv)).
 * **License Evidence:** Repository notices and publication documentation (Bhattacharya et al., 2021).
-* **Dataset Size:** 7,145 Indian Supreme Court judgments paired with expert headnote summaries.
-* **Commercial Use:** Academic and research use confirmed; commercial deployment of original headnotes requires verification of underlying Law-AI terms.
-* **Redistribution:** Permitted for research.
+* **Dataset Size:** 7,145 Indian Supreme Court judgments paired with headnote summaries.
+* **Commercial Use:** Code is commercial-friendly; headnote summaries require attribution and verification against publisher terms.
+* **Redistribution:** Permitted for research and evaluation.
 * **Training Use:** Allowed for summarization model training.
 * **Verification Date:** 2026-11-13
 * **Verification Status:** **PASS**
@@ -298,7 +301,9 @@ This registry documents all candidate datasets, raw repositories, and official g
 * **Repository ID:** `opennyaiorg/rhetorical-roles`
 * **Release / Version:** SemEval-2023 Task 6 Release
 * **Access URL:** `https://huggingface.co/datasets/opennyaiorg/rhetorical-roles` | `https://github.com/OpenNYAI/OpenNYAI`
-* **License:** Creative Commons Attribution 4.0 International (`CC BY 4.0`)
+* **Code License:** MIT License
+* **Dataset License:** Creative Commons Attribution 4.0 International (`CC BY 4.0`)
+* **Underlying Documents:** Public judgments of Indian High Courts and Supreme Court (§ 52(1)(q)(iv)).
 * **License Evidence:** Published in Hugging Face dataset card metadata and SemEval-2023 Task 6 overview.
 * **Dataset Size:** 500+ Indian court judgments; over 50,000 sentences annotated with 7 canonical rhetorical roles.
 * **Commercial Use:** Allowed (with attribution per CC BY 4.0).
@@ -315,7 +320,7 @@ This registry documents all candidate datasets, raw repositories, and official g
 * **Repository ID:** Official Supreme Court Portal
 * **Release / Version:** Live Official Archive (1950–Present)
 * **Access URL:** `https://digiscr.sci.gov.in/` and `https://judgments.ecourts.gov.in/`
-* **License:** Public Domain per Section 52(1)(q)(iv) of the Indian Copyright Act, 1957 / Official Government Publication
+* **License:** Public Record per Section 52(1)(q)(iv) of the Indian Copyright Act, 1957 / Official Government Publication
 * **License Evidence:** Statutory non-infringement exception under Section 52(1)(q)(iv).
 * **Dataset Size:** 36,000+ judgments published in official Supreme Court Reports (1950 to 2024).
 * **Commercial Use:** Allowed for raw judicial text (*Eastern Book Company*).
@@ -323,7 +328,7 @@ This registry documents all candidate datasets, raw repositories, and official g
 * **Training Use:** Allowed.
 * **Verification Date:** 2026-11-13
 * **Verification Status:** **PASS**
-* **Outstanding Legal Concerns:** Layout parsing must cleanly separate editorial headnotes from verbatim judicial text to avoid copyright infringement under the *Eastern Book Company* doctrine.
+* **Outstanding Legal Concerns:** Layout parsing must cleanly separate official headnotes from verbatim judicial text to avoid copyright infringement under the *Eastern Book Company* doctrine.
 
 ---
 
@@ -333,20 +338,20 @@ This registry documents all candidate datasets, raw repositories, and official g
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
 | `SRC-CONT-CUAD-01` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | **PASS** | Approved for Ingestion |
 | `SRC-CONT-MAUD-01` | PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | **PASS** | Approved for Ingestion |
-| `SRC-CONT-ACORD-01`| PASS | PASS | UNV | UNV | UNV | UNV | UNV | UNV | **NOT VERIFIED** | **Quarantined** (Missing Hub Repo) |
+| `SRC-CONT-ACORD-01`| PASS | PASS | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | **NOT VERIFIED** | **Quarantined** (Missing Hub Repo) |
 | `SRC-EXCL-ACORD-01`| PASS | PASS | PASS | PROHIB | PASS | PROHIB | PROHIB | PROHIB | **EXCLUDED** | **Excluded / Replaced with GIC** |
-| `SRC-STAT-KANOON-01`| PASS | UNV | UNV | UNV | UNV | UNV | UNV | UNV | **NOT VERIFIED** | **Quarantined** (ToS Boundaries) |
-| `SRC-CASE-KANOON-02`| PASS | UNV | UNV | UNV | UNV | UNV | UNV | UNV | **NOT VERIFIED** | **Quarantined** (ToS Boundaries) |
+| `SRC-STAT-KANOON-01`| PASS | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | **NOT VERIFIED** | **Quarantined** (ToS Boundaries) |
+| `SRC-CASE-KANOON-02`| PASS | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | **NOT VERIFIED** | **Quarantined** (ToS Boundaries) |
 | `SRC-CASE-AWSSC-01`| PASS | PASS | PASS | PASS | COND | PASS | PASS | PASS | **CONDITIONAL** | Approved (S3 Sync Pending) |
 | `SRC-CASE-AWSHC-01`| PASS | PASS | PASS | PASS | COND | PASS | PASS | PASS | **CONDITIONAL** | Approved (Volume Filter Pending) |
 | `SRC-STAT-INCODE-01`| PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | **PASS** | Approved for Ingestion |
-| `SRC-BIL-TRANS-01` | PASS | UNV | UNV | UNV | UNV | UNV | UNV | UNV | **NOT VERIFIED** | **Quarantined** (Rely on Gazettes) |
+| `SRC-BIL-TRANS-01` | PASS | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | **NOT VERIFIED** | **Quarantined** (Rely on Gazettes) |
 | `SRC-BIL-BHASHA-01`| PASS | PASS | PASS | COND | COND | REST | REST | PROHIB | **CONDITIONAL** | **Gated Evaluation Only** |
-| `SRC-CASE-FIRAC-01` | UNV | UNV | UNV | UNV | UNV | UNV | UNV | UNV | **NOT VERIFIED** | **Quarantined** |
-| `SRC-CASE-INDQA-01` | UNV | UNV | UNV | UNV | UNV | UNV | UNV | UNV | **NOT VERIFIED** | **Quarantined** |
+| `SRC-CASE-FIRAC-01` | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | **NOT VERIFIED** | **Quarantined** |
+| `SRC-CASE-INDQA-01` | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | **NOT VERIFIED** | **Quarantined** |
 | `SRC-CASE-INABS-01` | PASS | PASS | PASS | PASS | PASS | COND | PASS | PASS | **PASS** | Approved for Summarization |
-| `SRC-CASE-CIVSUM-01`| UNV | UNV | UNV | UNV | UNV | UNV | UNV | UNV | **NOT VERIFIED** | **Quarantined** |
+| `SRC-CASE-CIVSUM-01`| UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | UNKNOWN | **NOT VERIFIED** | **Quarantined** |
 | `SRC-CASE-OPENNYAI-01`| PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | **PASS** | Approved for Ingestion |
 | `SRC-CASE-DIGISCR-01`| PASS | PASS | PASS | PASS | PASS | PASS | PASS | PASS | **PASS** | Approved for Ingestion |
 
-*Key: PASS = Verified with primary evidence; COND = Conditional on operational verification; UNV = Not Verified; PROHIB = Statutorily or contractually prohibited; REST = Restricted.*
+*Key: PASS = Verified with primary evidence; COND = Conditional on operational verification; UNKNOWN = Unknown / Not Verified; PROHIB = Statutorily or contractually prohibited; REST = Restricted.*

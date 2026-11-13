@@ -1,10 +1,10 @@
 # 14. Dataset Implementation Roadmap
 
 **Document ID:** `LEGALAI-DOC-DE-14`  
-**Version:** `1.2.0`  
+**Version:** `1.2.1`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
 **Audited Date:** 2026-11-13  
-**Dependencies:** `INDEX.md`, All specifications `01` through `13`, `PHASE_1_2_ISSUE_REGISTER.md`, `PHASE_1_2_EVIDENCE_REGISTER.md`
+**Dependencies:** `INDEX.md`, All specifications `01` through `13`, `PHASE_1_2_1_ISSUE_REGISTER.md`, `PHASE_1_2_1_EVIDENCE_REGISTER.md`
 
 ---
 
@@ -33,9 +33,11 @@ gantt
     section Phase 1.2: Verification & Remediation
     Evidence Register & Issue Audit       :done,    p12_1, 2026-11-13, 1d
     In-Place Specification Remediation    :done,    p12_2, 2026-11-13, 1d
-    Validation Report & Review Gate       :active,  p12_3, 2026-11-13, 1d
+    section Phase 1.2.1: Critical Remediation
+    Statutory Precision & Reconciliation  :done,    p121_1, 2026-11-13, 1d
+    Evidence Ledger & Sign-off Gate       :active,  p121_2, 2026-11-13, 1d
     section Phase 2: Pipeline Buildout (Planned)
-    Bronze Lake & Scraper Infrastructure  :         p2_1, after p12_3, 7d
+    Bronze Lake & Scraper Infrastructure  :         p2_1, after p121_2, 7d
     Silver ETL, OCR & PII Redaction       :         p2_2, after p2_1, 10d
     MinHash Deduplication & Splitting     :         p2_3, after p2_2, 5d
     Gold Parquet & HF Datasets Packaging  :         p2_4, after p2_3, 5d
