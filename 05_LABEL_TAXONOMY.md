@@ -85,14 +85,14 @@ Section 27 declares: *"Every agreement by which any one is restrained from exerc
 ### 3.2 Governing Law, Arbitration Seat & Jurisdiction Clauses
 
 > [!IMPORTANT]
-> **Disentanglement of Key Conflict-of-Laws Concepts (TAX-122-02):**  
-> LegalAI strictly distinguishes six independent legal concepts:
-> 1. **Substantive Governing Law (Lex Causae):** The substantive law governing the merits of the contractual dispute.
-> 2. **Law of the Arbitration Agreement:** The law governing the formation, validity, and interpretation of the arbitration clause itself.
-> 3. **Curial Law / Lex Arbitri / Seat of Arbitration:** The legal domicile of the arbitration, determining supervisory court jurisdiction.
-> 4. **Physical Venue / Place of Hearings:** The convenient geographic location where hearings occur, distinct from the legal seat.
-> 5. **Court Jurisdiction:** The supervisory or enforcement jurisdiction of municipal courts.
-> 6. **Substantive Law Applicable to Dispute in Arbitration:** Governed by Section 28 of the Arbitration Act, 1996.
+> **Disentanglement of Key Conflict-of-Laws Concepts (TAX-122-02, HIGH-1222-03):**  
+> LegalAI strictly distinguishes six independent legal concepts, each governed by distinct statutory provisions and judicial precedents:
+> 1. **Substantive Governing Law of the Contract (Lex Causae):** The substantive law governing the merits, interpretation, and discharge of contractual obligations.
+> 2. **Law of the Arbitration Agreement:** The law governing the formation, validity, and scope of the arbitration clause itself (*NTPC v. Singer Co. (1992) 3 SCC 551*).
+> 3. **Curial Law / Lex Arbitri / Seat of Arbitration:** The legal domicile of the arbitration, determining the supervisory court jurisdiction and procedural framework (*BALCO (2012) 9 SCC 552*).
+> 4. **Physical Venue / Place of Hearings:** The geographic location for hearing convenience, which does not alter the juridical seat.
+> 5. **Exclusive Municipal Court Jurisdiction:** Choice of forum for litigation or court intervention, restricted by inherent jurisdiction limits (*Hakam Singh (1971) 1 SCC 286*).
+> 6. **Substantive Law Applicable to Dispute in Arbitration:** Governed strictly by Section 28 of the Arbitration and Conciliation Act, 1996.
 
 #### Contextual Legal Analysis:
 1. **Domestic Arbitration Between Indian Parties (Arbitration Act § 28(1)(a)):**
@@ -100,17 +100,17 @@ Section 27 declares: *"Every agreement by which any one is restrained from exerc
    - If two domestic Indian companies stipulate a foreign substantive governing law, that choice of foreign substantive law is inoperative and severable; the dispute remains governed by Indian substantive law.
    - *Risk Classification:* Tagged as `high` risk (enforceability defect in choice of law; severed). It is **not** automatically `critical` or void *ab initio* in its entirety.
 2. **Domestic Parties Choosing a Foreign Seat of Arbitration (VALID):**
-   - In *PASL Wind Solutions (P) Ltd. v. GE Power Conversion India (P) Ltd. (2021) 7 SCC 1*, the Supreme Court held that two Indian companies can lawfully choose a foreign seat of arbitration (e.g., Singapore, London, Zurich). The resulting award is an international award enforceable in India under Part II of the Arbitration Act.
-   - Choosing a foreign seat does not violate Section 23 or 28 of the Indian Contract Act, 1872.
+   - In *PASL Wind Solutions (P) Ltd. v. GE Power Conversion India (P) Ltd. (2021) 7 SCC 1*, the Supreme Court held that two Indian companies can lawfully choose a foreign seat of arbitration (e.g., Singapore, London, Zurich). The resulting award is an foreign award enforceable in India under Part II of the Arbitration Act.
+   - Choosing a foreign seat does not violate Section 23 or 28 of the Indian Contract Act, 1872. However, the parties cannot contract out of fundamental, non-derogable Indian substantive public policy.
    - *Risk Classification:* Tagged as `medium` risk (higher costs and international enforcement procedures), not void or invalid.
 3. **Exclusive Court Jurisdiction Between Competent Indian Courts (VALID):**
-   - When two or more civil courts possess territorial and pecuniary jurisdiction over a contract, an agreement vesting exclusive jurisdiction in one of those competent courts is valid and does not violate Section 28 of the Indian Contract Act, 1872 (*Hakam Singh v. Gammon (India) Ltd. (1971) 1 SCC 286*; *A.B.C. Laminart v. A.P. Agencies (1989) 2 SCC 163*).
-   - Parties cannot confer jurisdiction on a court that inherently lacks subject-matter jurisdiction.
+   - When two or more civil courts possess territorial and pecuniary jurisdiction over a contract under the Code of Civil Procedure, 1908, an agreement vesting exclusive jurisdiction in one of those competent courts is valid and does not violate Section 28 of the Indian Contract Act, 1872 (*Hakam Singh v. Gammon (India) Ltd. (1971) 1 SCC 286*; *A.B.C. Laminart v. A.P. Agencies (1989) 2 SCC 163*).
+   - *Strict Boundary:* Parties cannot by agreement confer jurisdiction on a court that inherently lacks subject-matter or territorial jurisdiction under the CPC.
    - *Risk Classification:* `low` risk (standard procedural choice).
-4. **Cross-Border Commercial Contracts (At Least One Foreign Party):**
-   - Where at least one party is incorporated or resident outside India, full party autonomy applies to choice of substantive law, seat, and jurisdiction (*Bharat Aluminium Co. v. Kaiser Aluminium Technical Services (2012) 9 SCC 552*).
-   - *Qualification:* Party autonomy is subject to mandatory Indian public policy, fundamental policy of Indian law, and statutory compliance (e.g., FEMA regulations, competition law).
-   - *Risk Classification:* `low` or `medium` risk depending on forum accessibility.
+4. **International Commercial Arbitration & Seat-Based Framework (*BALCO* Qualification):**
+   - In *Bharat Aluminium Co. v. Kaiser Aluminium Technical Services Inc. (2012) 9 SCC 552 (BALCO)*, the Supreme Court established the territoriality principle: Part I of the Arbitration Act applies only when the arbitral seat is in India; Part I and Part II are mutually exclusive. Choosing a foreign seat excludes Part I supervisory jurisdiction of Indian courts (subject to the Section 2(2) proviso for interim relief).
+   - *Substantive Law Autonomy in International Arbitration:* In an International Commercial Arbitration (Section 2(1)(f)), Section 28(1)(b) allows parties to designate the substantive rules of law applicable to the dispute. However, this autonomy is **not absolute**: it cannot validate transactions that violate mandatory provisions of Indian law, foreign exchange regulations (FEMA), or fundamental public policy of India under Section 34/48.
+   - *Risk Classification:* `low` or `medium` risk depending on forum accessibility and alignment between curial seat and substantive law.
 
 ---
 

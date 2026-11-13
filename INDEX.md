@@ -1,12 +1,13 @@
 # LegalAI Dataset Engineering Documentation
 
 **Document ID:** `LEGALAI-DOC-DE-INDEX`  
-**Version:** `1.2.2`  
-**Status:** Draft v1.0 — Pending Technical and Legal Review  
+**Version:** `1.2.2.1`  
+**Status:** Canonical Audited Master Specification — Pending Independent Technical and Legal Review  
 **Audited Date:** 2026-11-13  
 **Authors:** Senior AI Architect, Legal NLP Engineer, Data Engineer, ML Research Engineer  
 **Target Platform:** LegalAI (Indian Legal Intelligence Platform — English & Hindi)  
-**Readiness Determination:** `CONDITIONALLY READY FOR INDEPENDENT REVIEW`
+**Readiness Determination:** `CONDITIONALLY READY FOR INDEPENDENT REVIEW`  
+**Phase 2 Authorization:** **STRICTLY NOT AUTHORIZED**
 
 ---
 
@@ -30,7 +31,7 @@ docs/dataset-engineering/
 ├── INDEX.md                                # Master index and architecture guide (this file)
 ├── 01_DATASET_ARCHITECTURE.md              # Pipeline architecture (Bronze/Silver/Gold), ETL topology, storage tiers
 ├── 02_SOURCE_REGISTRY.md                   # 14-field verified registry of candidate datasets across 4 primary categories
-├── 03_LICENSE_AND_PROVENANCE_POLICY.md     # Intellectual property, Indian Copyright Act §52(1)(q), DPDP Act, licenses
+├── 03_LICENSE_AND_PROVENANCE_POLICY.md     # Intellectual property, Indian Copyright Act § 52(1)(q), DPDP Act, licenses
 ├── 04_CANONICAL_DATA_SCHEMAS.md            # Production-grade Pydantic v2 & JSON Schema Draft 2020-12 schemas for all records
 ├── 05_LABEL_TAXONOMY.md                    # Canonical taxonomy for clauses, risks, Indian statutes, NER, and rhetorical roles
 ├── 06_ANNOTATION_GUIDELINES.md             # Dual-annotator agreement protocols, adjudication rules, Cohen's/Fleiss' Kappa
@@ -56,16 +57,36 @@ docs/dataset-engineering/
 ├── PHASE_1_2_1_VALIDATION_REPORT.md        # Dual-dimension validation report (Phase 1.2.1 baseline)
 ├── PHASE_1_2_1_SIGNOFF.md                  # Technical and legal sign-off review (Phase 1.2.1 baseline)
 ├── PHASE_1_2_1_CHANGELOG.md                # Remediation changelog (Phase 1.2.1 baseline)
-├── PHASE_1_2_2_EVIDENCE_REGISTER.md        # Canonical semantic evidence register (Phase 1.2.2 current)
-├── PHASE_1_2_2_ISSUE_REGISTER.md           # Final interpretation issue register (Phase 1.2.2 current)
-├── PHASE_1_2_2_VALIDATION_REPORT.md        # Comprehensive dual-dimension audit report (Phase 1.2.2 current)
-├── PHASE_1_2_2_SIGNOFF.md                  # Stakeholder sign-off and readiness gate (Phase 1.2.2 current)
-└── PHASE_1_2_2_CHANGELOG.md                # Exhaustive remediation changelog (Phase 1.2.2 current)
+├── PHASE_1_2_2_EVIDENCE_REGISTER.md        # Canonical semantic evidence register (Phase 1.2.2 historical)
+├── PHASE_1_2_2_ISSUE_REGISTER.md           # Final interpretation issue register (Phase 1.2.2 historical)
+├── PHASE_1_2_2_VALIDATION_REPORT.md        # Comprehensive dual-dimension audit report (Phase 1.2.2 historical)
+├── PHASE_1_2_2_SIGNOFF.md                  # Stakeholder sign-off and readiness gate (Phase 1.2.2 historical)
+├── PHASE_1_2_2_CHANGELOG.md                # Exhaustive remediation changelog (Phase 1.2.2 historical)
+├── PHASE_1_2_2_1_EVIDENCE_REGISTER.md      # Authoritative 27-record semantic evidence ledger (Phase 1.2.2.1 active)
+├── PHASE_1_2_2_1_ISSUE_REGISTER.md         # Evidence integrity & legal permissions register (Phase 1.2.2.1 active)
+├── PHASE_1_2_2_1_VALIDATION_REPORT.md      # Deterministic script execution & audit report (Phase 1.2.2.1 active)
+├── PHASE_1_2_2_1_SIGNOFF.md                # Authoritative AC-01 to AC-15 sign-off matrix (Phase 1.2.2.1 active)
+└── PHASE_1_2_2_1_CHANGELOG.md              # Remediation audit changelog (Phase 1.2.2.1 active)
+
+scripts/
+└── audit_docs_integrity.py                 # Deterministic documentation, link, evidence & sign-off integrity audit script
 ```
 
 ---
 
-## 3. Codebase Verification & Component Alignment
+## 3. Data Governance Architecture: Three-Tier Mapping (MED-1222-02)
+
+To prevent ambiguity between metadata collection, technical evaluation, and legal permissions, the platform defines a clear mapping between its three governance tiers:
+
+| Tier | Governance Structure | Count | Purpose & Operational Function | Key Document Reference |
+|:---:|:---|:---:|:---|:---|
+| **Tier 1** | **Registry Metadata Fields** | 14 Fields | Documents empirical metadata for every ingested source (e.g., ID, name, publisher, URL, version, disk footprint, license, verification date). | `02_SOURCE_REGISTRY.md` (§ 1.2) |
+| **Tier 2** | **Verification Dimensions** | 8 Dimensions | Independent audit dimensions evaluated by technical and legal reviewers (Publisher, Dataset Identity, Release, License, Endpoint, Commercial Rights, Redistribution, Training Rights). | `02_SOURCE_REGISTRY.md` (§ 1.2, § 6) |
+| **Tier 3** | **Operational Permissions** | 10 Operations | Granular technical operations evaluated under copyright and contractual terms (Op-01 Raw Collection, Op-02 Storage, Op-03 Parsing, Op-04 Indexing, Op-05 Embeddings, Op-06 Commercial RAG, Op-07 SFT, Op-08 Pretraining, Op-09 Model Weights, Op-10 Redistribution). | `02_SOURCE_REGISTRY.md` (§ 1.3, § 6), `03_LICENSE_AND_PROVENANCE_POLICY.md` (§ 2.3) |
+
+---
+
+## 4. Codebase Verification & Component Alignment
 
 Every documented component has been audited against the actual source code in the repository.
 
@@ -91,9 +112,9 @@ Every documented component has been audited against the actual source code in th
 
 ---
 
-## 4. Operational Boundaries & Governance Directives
+## 5. Operational Boundaries & Governance Directives
 
-1. **Phase 2 Authorization Status:** **NOT AUTHORIZED**. Execution of Phase 2 data engineering, bulk harvesting, and pipeline buildout is strictly prohibited without explicit written sign-off from designated human stakeholders.
+1. **Phase 2 Authorization Status:** **NOT AUTHORIZED**. Execution of Phase 2 data engineering, bulk harvesting, crawler daemons, and pipeline buildout is strictly prohibited without explicit written sign-off from designated human stakeholders.
 2. **No Source Code Modification:** No application code within `frontend/` or `backend/` is modified during this phase.
 3. **No Model Training:** Model pre-training, fine-tuning, and embedding retraining are strictly deferred to Phase 3.
 4. **No Bulk Ingestion:** Raw dataset downloads and heavy crawling are strictly deferred to Phase 2 pipelines.

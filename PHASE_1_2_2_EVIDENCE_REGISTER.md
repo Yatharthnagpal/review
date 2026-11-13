@@ -167,6 +167,21 @@ In compliance with **EVID-122-01**, every evidence entry provides semantic align
 
 ---
 
+### EVID-LEG-09: Delhi High Court Interim Order in *ANI Media Pvt. Ltd. v. OpenAI Opco LLC* (24 July 2026)
+* **Claim ID:** `CLAIM-LEG-09`
+* **Claim:** The Delhi High Court's interim order in *ANI Media v. OpenAI* evaluated prima facie fair dealing arguments under Section 52(1)(a) of the Copyright Act, 1957 in the context of automated web crawling and AI training. The order was an interim procedural determination on specific facts; it does not settle the legality of AI training, pretraining, commercial RAG, or weight distribution under Indian law, nor does it establish an open-ended commercial AI fair dealing exception.
+* **Primary Authority:** *ANI Media Pvt. Ltd. v. OpenAI Opco LLC*, CS(COMM) 2026, High Court of Delhi, Interim Order dated 24 July 2026; Copyright Act, 1957, Section 52(1)(a).
+* **Official URL:** High Court of Delhi Case Portal / `https://delhihighcourt.nic.in/`
+* **Access Date:** 2026-11-13
+* **What the Source Establishes:** 
+  1. The Delhi High Court is actively adjudicating the boundaries of copyright infringement, web crawling, and LLM training under Section 52(1)(a) of the Indian Copyright Act.
+  2. The proceedings confirm that Indian copyright law lacks an express statutory TDM exception, and fair dealing claims under Section 52(1)(a) are subject to contested, fact-specific judicial scrutiny.
+* **What the Source Does NOT Establish:** The interim order does **not** establish a definitive final precedent, nor does it create a blanket authorization for commercial AI model training, fine-tuning, embedding generation, or commercial RAG serving of copyrighted content.
+* **Verification Status:** **PASS (Procedural Authority Audited) / CONDITIONAL (Substantive AI Training Legality Pending Final Judgment & Legal Review)**
+* **Related Documents:** `03_LICENSE_AND_PROVENANCE_POLICY.md`, `02_SOURCE_REGISTRY.md`.
+
+---
+
 ## 3. Canonical Taxonomy & Scoring Evidence Ledger
 
 ### EVID-TAX-01: Decoupled Legal Risk Formulation & Initial Heuristic Weights
@@ -235,3 +250,4 @@ In compliance with **EVID-122-01**, every evidence entry provides semantic align
 ### EVID-ML-02: Cross-Lingual Semantic Cosine Threshold Sweep
 * **Empirical Reality:** The 0.88 cosine similarity threshold has not been swept across parallel Indic corpora.
 * **Verification Finding:** **PROVISIONAL HYPOTHESIS (NOT RUN)**. Sweep protocol documented for Sprint 2.3.
+
