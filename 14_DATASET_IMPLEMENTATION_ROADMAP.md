@@ -1,18 +1,20 @@
 # 14. Dataset Implementation Roadmap
 
 **Document ID:** `LEGALAI-DOC-DE-14`  
-**Version:** `1.1.0`  
+**Version:** `1.2.0`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
-**Audited Date:** 2026-11-12  
-**Dependencies:** `INDEX.md`, All specifications `01` through `13`, `PHASE_1_1_ISSUE_REGISTER.md`
+**Audited Date:** 2026-11-13  
+**Dependencies:** `INDEX.md`, All specifications `01` through `13`, `PHASE_1_2_ISSUE_REGISTER.md`, `PHASE_1_2_EVIDENCE_REGISTER.md`
 
 ---
 
 ## 1. Executive Summary
 
-This roadmap defines the chronological milestones, engineering sprints, resource requirements, and risk mitigation checkpoints required to transition from the **Phase 1 & 1.1: Project Foundation and Dataset Governance** specifications into **Phase 2: Data Engineering & Pipeline Buildout**.
+This roadmap defines the chronological milestones, engineering sprints, resource requirements, and risk mitigation checkpoints required to transition from the **Phase 1, 1.1, and 1.2: Project Foundation, Evidence Verification, and Dataset Governance** specifications into **Phase 2: Data Engineering & Pipeline Buildout**.
 
 Execution follows strict gated governance: no subsequent phase initiates without formal review and sign-off on predecessor milestones.
+
+The current determination under Phase 1.2 is **`CONDITIONALLY READY FOR INDEPENDENT REVIEW`**.
 
 ---
 
@@ -28,9 +30,12 @@ gantt
     section Phase 1.1: Audit & Correction
     Phase 1.1 Documentation Audit         :done,    p11_1, 2026-11-12, 1d
     Canonical Schema Harmonization        :done,    p11_2, 2026-11-12, 1d
-    Validation Report & Sign-Off Gate     :active,  p11_3, 2026-11-12, 1d
+    section Phase 1.2: Verification & Remediation
+    Evidence Register & Issue Audit       :done,    p12_1, 2026-11-13, 1d
+    In-Place Specification Remediation    :done,    p12_2, 2026-11-13, 1d
+    Validation Report & Review Gate       :active,  p12_3, 2026-11-13, 1d
     section Phase 2: Pipeline Buildout (Planned)
-    Bronze Lake & Scraper Infrastructure  :         p2_1, after p11_3, 7d
+    Bronze Lake & Scraper Infrastructure  :         p2_1, after p12_3, 7d
     Silver ETL, OCR & PII Redaction       :         p2_2, after p2_1, 10d
     MinHash Deduplication & Splitting     :         p2_3, after p2_2, 5d
     Gold Parquet & HF Datasets Packaging  :         p2_4, after p2_3, 5d
@@ -77,9 +82,10 @@ gantt
 ### Sprint 2.3: Deduplication, Cluster Splitting & Gold Packaging
 - **Objectives:**
   1. Implement MinHash LSH near-duplicate detector ($J \ge 0.85$) to cluster standard template agreements.
-  2. Enforce strict document-level 70/15/15 train/val/test group splitting with bilingual section binding.
-  3. Package task-ready Parquet partitions: `contract_clauses`, `risk_intelligence`, `firac_case_studies`, `bilingual_statutes`.
-  4. Write Hugging Face `GeneratorBasedBuilder` script with per-config licensing.
+  2. Execute baseline duplicate benchmark on sample corpus to measure real precision, recall, and false-positive rates (replacing ungrounded 0% claim).
+  3. Enforce strict document-level 70/15/15 train/val/test group splitting with bilingual section binding.
+  4. Package task-ready Parquet partitions: `contract_clauses`, `risk_intelligence`, `firac_case_studies`, `bilingual_statutes`.
+  5. Deploy Hugging Face `GeneratorBasedBuilder` script with per-config licensing.
 - **Deliverables:**
   - `scripts/pipeline/minhash_dedup.py`
   - `scripts/pipeline/group_split.py`
@@ -98,23 +104,26 @@ gantt
 
 ## 4. Dependencies, Resource Allocation & Risk Matrix
 
-| Risk / Dependency | Probability | Impact | Mitigation Strategy |
+| Risk / Dependency | Probability | Impact | Phase 1.2 Verification Status & Mitigation Strategy |
 | :--- | :--- | :--- | :--- |
 | **High OCR Error Rate in Pre-1975 Judgments** | High | High | Restrict initial Gold RAG index to post-1975 digital reports; route legacy scans through PaddleOCR deskew and manual transcription queue. |
-| **ACORD Commercial Licensing Restrictions** | High | Resolved | Excluded proprietary ACORD forms; approved Atticus A-CoRD (`CC BY 4.0`) and public domain Indian insurance forms. |
-| **KanoonGPT Terms of Service Boundaries** | Medium | Medium | Ingestion quarantined pending formal ToS review; rely on public-domain AWS Open Data and Official India Code for base training. |
-| **Hindi Legal Terminology Ambiguity** | Medium | Medium | Strict enforcement of the canonical glossary in `07_BILINGUAL_DATA_STRATEGY.md` with Tier 2 Hindi legal expert review. |
-| **Cross-Lingual Translation Leakage** | High | High | Inviolable bilingual document/section ID binding and semantic vector cosine screening ($\ge 0.88$). |
-| **Computational Resource Constraints (Vectorization)** | Low | Medium | Use quantized embeddings (`fastembed`, `bge-small-en-v1.5` / `bge-m3`) with batched GPU acceleration. |
+| **ACORD Commercial Standards Exposure** | High | Resolved | **EXCLUDED / QUARANTINED.** Commercial ACORD forms are strictly excluded from all training and serving pipelines. Public-domain Indian insurance templates used exclusively. |
+| **Atticus A-CoRD Release Verification** | Medium | Medium | **NOT VERIFIED (`EVID-SRC-01`).** Standalone Hugging Face parquet release unverified; quarantined until upstream source repo and license are authenticated. |
+| **LegalTransEn Release Verification** | Medium | Medium | **NOT VERIFIED (`EVID-SRC-03`).** Quarantined pending confirmation of upstream huggingface dataset card and license terms. |
+| **KanoonGPT Terms of Service Boundaries** | Medium | Medium | **CONDITIONAL (`EVID-SRC-04`).** Quarantined from automated crawling pending legal review of IndianKanoon Terms of Service. AWS Open Data used for judgments. |
+| **Cross-Lingual Cosine Threshold Validation** | Medium | Medium | **PROVISIONAL HYPOTHESIS (`EVID-ML-02`).** Empirical validation of 0.88 cosine similarity threshold marked `NOT RUN`; validation experiment scheduled in Sprint 2.3. |
+| **Hindi Legal Terminology Ambiguity** | Medium | Medium | Strict enforcement of canonical glossary in `07_BILINGUAL_DATA_STRATEGY.md` with Tier 2 Hindi legal expert review. |
+| **Computational Constraints (Vectorization)** | Low | Medium | Use quantized embeddings (`fastembed`, `bge-small-en-v1.5` / `bge-m3`) with batched GPU acceleration. |
 
 ---
 
-## 5. Phase 1.1 Sign-Off Checkpoint
+## 5. Phase 1.2 Sign-Off & Governance Gate
 
 > [!IMPORTANT]
-> **Human Approval Gate:**  
-> All 15 technical specifications under `docs/dataset-engineering/` have been revised in-place to Version 1.1.0, resolving all legal, schema, preprocessing, and architectural discrepancies.  
+> **Human Review Gate:**  
+> All 15 core technical specifications under `docs/dataset-engineering/` have been remediated in-place to Version 1.2.0, resolving statutory inaccuracies, dataset licensing boundaries, canonical schema discrepancies, and machine-learning leakage assumptions.
 > 
-> As mandated by Phase 1.1 governance:  
-> **CURRENT STATUS REMAINS: Draft v1.0 — Pending Technical and Legal Review.**  
-> **DO NOT PROCEED TO PHASE 2 PIPELINE IMPLEMENTATION WITHOUT FORMAL SIGN-OFF.**
+> As mandated by Phase 1.2 governance:  
+> **CURRENT PLATFORM DETERMINATION: `CONDITIONALLY READY FOR INDEPENDENT REVIEW`.**  
+> 
+> **DO NOT DECLARE "READY FOR PHASE 2" OR COMMENCE PIPELINE IMPLEMENTATION WITHOUT FORMAL WRITTEN SIGN-OFF FROM INDEPENDENT LEGAL COUNSEL AND LEAD DATA ARCHITECT.**

@@ -1,11 +1,11 @@
 # 04. Canonical Data Schemas
 
 **Document ID:** `LEGALAI-DOC-DE-04`  
-**Version:** `1.1.0`  
+**Version:** `1.2.0`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
-**Audited Date:** 2026-11-12  
-**Framework:** Pydantic v2.10+ / JSON Schema Draft-07  
-**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `backend/app/models/schemas.py`, `PHASE_1_1_ISSUE_REGISTER.md`
+**Audited Date:** 2026-11-13  
+**Framework:** Pydantic v2.10+ / JSON Schema Draft 2020-12 (with Draft-07 Compatibility Specification)  
+**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `backend/app/models/schemas.py`, `PHASE_1_2_EVIDENCE_REGISTER.md`
 
 ---
 
@@ -23,6 +23,8 @@ All data pipelines in LegalAI (ingestion, processing, annotation, vectorization,
    - Risk and clause records explicitly record analysis perspective: `party_a`, `party_b`, or `neutral`.
 4. **Synthetic vs. Empirical Isolation:**
    - Hypothetical and synthetic case studies explicitly label ground truth reference analysis separately from machine-generated hypotheses to prevent synthetic text from being evaluated as empirical jurisprudence.
+5. **JSON Schema Dialect Alignment (Pydantic v2 Native):**
+   - Pydantic v2 natively generates schemas adhering to **JSON Schema Draft 2020-12** and OpenAPI 3.1.0. For legacy downstream validators requiring Draft-07, Section 5 provides the compatibility conversion mapping.
 
 ---
 
@@ -79,7 +81,7 @@ class CanonicalBaseRecord(BaseModel):
 
     example_id: str = Field(..., description="Globally unique UUIDv5 or deterministic record ID")
     document_id: str = Field(..., description="Unique document ID grouping child records")
-    dataset_version: str = Field(default="1.0.0", description="Semantic version of dataset release")
+    dataset_version: str = Field(default="1.2.0", description="Semantic version of dataset release")
     language: LanguageCode = Field(default=LanguageCode.EN, description="ISO language tag")
     jurisdiction: str = Field(default="India", description="Legal jurisdiction (e.g., 'India', 'Delaware')")
     annotation_status: AnnotationStatus = Field(default=AnnotationStatus.RAW)
@@ -431,11 +433,11 @@ class AgentEvaluationRecord(CanonicalBaseRecord):
 
 ---
 
-## 4. JSON Schema Specification (Sample: `ContractClauseRecord`)
+## 4. JSON Schema Draft 2020-12 Specification (Native Pydantic v2)
 
 ```json
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ContractClauseRecord",
   "type": "object",
   "required": [
@@ -455,7 +457,7 @@ class AgentEvaluationRecord(CanonicalBaseRecord):
   "properties": {
     "example_id": { "type": "string" },
     "document_id": { "type": "string" },
-    "dataset_version": { "type": "string", "default": "1.0.0" },
+    "dataset_version": { "type": "string", "default": "1.2.0" },
     "language": { "type": "string", "enum": ["en", "hi", "en_hi_mixed"] },
     "jurisdiction": { "type": "string", "default": "India" },
     "annotation_status": { 
@@ -514,3 +516,30 @@ class AgentEvaluationRecord(CanonicalBaseRecord):
   "additionalProperties": false
 }
 ```
+
+### 4.1 Legacy Draft-07 Conversion Note
+For legacy verification harnesses requiring JSON Schema Draft-07:
+1. Replace `$schema: "https://json-schema.org/draft/2020-12/schema"` with `"http://json-schema.org/draft-07/schema#"`.
+2. Convert any `$defs` blocks to `definitions`.
+3. Pydantic v2 can be configured for Draft-07 output via custom schema generator extensions when necessary.
+
+---
+
+## 5. Serialization & Round-Trip Validation Test Specification
+
+To guarantee reproducibility and lossless data transfer, the Phase 2 test harness must execute the following automated validation suite (`tests/test_canonical_schemas.py`):
+
+1. **Test 1: Instantiation & Strict Type Enforcement:**
+   - Instantiate all 10 records with valid and invalid types (e.g., string passed to integer offset). Verify `pydantic.ValidationError` is raised on invalid types.
+2. **Test 2: Extra Field Forbidding:**
+   - Verify that unexpected keys injected into JSON payloads trigger validation errors (`extra="forbid"` rule).
+3. **Test 3: JSON Round-Trip Losslessness:**
+   - Verify: `ContractClauseRecord.model_validate_json(record.model_dump_json()) == record`.
+4. **Test 4: PyArrow Table Compatibility:**
+   - Convert list of canonical Pydantic model dicts to `pyarrow.Table` using `CONTRACT_CLAUSE_ARROW_SCHEMA`. Verify zero schema casting errors or data loss.
+5. **Test 5: Null & Optional Field Preservation:**
+   - Verify that optional fields (`clause_title`, `embedding`, `suggested_revision_text`) serialize to `null` in JSON and `None` in Python without dropping the keys.
+6. **Test 6: Unicode Code Point Slice Invariance:**
+   - Given normalized contract text $T$, verify that for all clauses:
+     $$T[\text{clause.char\_start} : \text{clause.char\_end}] == \text{clause.clause\_text}$$
+     testing specifically against strings containing Devanagari Unicode characters, smart quotes, and em-dashes.

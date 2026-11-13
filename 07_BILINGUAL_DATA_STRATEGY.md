@@ -1,37 +1,56 @@
 # 07. Bilingual Data Strategy (English & Hindi)
 
 **Document ID:** `LEGALAI-DOC-DE-07`  
-**Version:** `1.1.0`  
+**Version:** `1.2.0`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
-**Audited Date:** 2026-11-12  
+**Audited Date:** 2026-11-13  
 **Target Languages:** English (`en`), Hindi (`hi`, Devanagari script)  
-**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `PHASE_1_1_ISSUE_REGISTER.md`
+**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `PHASE_1_2_EVIDENCE_REGISTER.md`
 
 ---
 
 ## 1. Executive Summary
 
-In India's judicial ecosystem, while the Supreme Court and corporate arbitration predominantly function in English, substantial portions of commercial documentation, state-level subordinate litigation, government procurement tenders, and consumer notices operate in Hindi and regional languages. Article 348 of the Constitution of India and Section 5 of the *Official Languages Act, 1963* mandate the publication of authorized Hindi translations of all Central Acts and ordinances.
+In India's judicial ecosystem, while the Supreme Court and corporate arbitration predominantly function in English, substantial portions of commercial documentation, state-level subordinate litigation, government procurement tenders, and consumer notices operate in Hindi and regional languages.
 
-This strategy establishes the foundation for **LegalAI's Bilingual Intelligence Engine**, ensuring that Hindi is integrated natively into statutory retrieval, clause analysis, and conversational drafting without degradation or superficial machine translation artifacts.
+This strategy establishes the foundation for **LegalAI's Bilingual Intelligence Engine**, ensuring that Hindi is integrated natively into statutory retrieval, clause analysis, and conversational drafting without degradation or superficial machine translation artifacts, while accurately reflecting the constitutional and statutory status of Hindi translations.
 
 ---
 
-## 2. Bilingual Architecture Topology
+## 2. Constitutional & Statutory Status of Bilingual Texts
+
+### 2.1 Article 348 of the Constitution of India (English Primacy)
+Under Article 348(1)(b)(ii) of the Constitution of India, the authoritative text of all Bills, Acts of Parliament, Ordinances, and subordinate rules passed by Parliament must be in the **English language** until Parliament by law otherwise provides.
+
+### 2.2 Section 5(1) of the Official Languages Act, 1963 (Authoritative Hindi Text)
+Section 5(1) of the *Official Languages Act, 1963* provides:
+> *"A translation in Hindi published under the authority of the President in the Official Gazette on and after the appointed day—*  
+> *(a) of any Central Act or of any Ordinance promulgated by the President, or*  
+> *(b) of any order, rule, regulation or bye-law issued under the Constitution or under any Central Act,*  
+> *shall be deemed to be the authoritative text thereof in Hindi."*
+
+**Legal & Operational Implications:**
+1. **Authoritative Status:** Publication in the Gazette under Presidential authority creates an authorized legal text in Hindi for official and judicial reference.
+2. **Absence of Universal Obligation:** Section 5(1) does **not** create an automatic, self-executing statutory mandate that every single Central Act, state law, ordinance, or administrative notification must immediately have an authorized Hindi translation published simultaneously.
+3. **Dataset Collection Reality:** Bilingual statutory ingestion cannot assume universal coverage across all 850+ Central Acts. Ingestion pipelines prioritize available authorized translations published by *Vidhi Sahitya Prakashan* (Legislative Department, Ministry of Law and Justice) for core civil, commercial, and penal enactments, treating coverage as selective and expanding rather than universally complete.
+
+---
+
+## 3. Bilingual Architecture Topology
 
 ```mermaid
 flowchart TD
     subgraph Corpora["Corpora Acquisition"]
-        EnStat["English Acts & Rules<br/>(India Code)"]
-        HiStat["Authorized Hindi Acts<br/>(Vidhi Sahitya Prakashan)"]
-        EnJudg["English Judicial Opinions<br/>(SCR / e-Courts)"]
-        HiJudg["Translated Hindi Judgments<br/>(DigiSCR / High Courts)"]
+        EnStat["English Acts & Rules<br/>(India Code) [VERIFIED]"]
+        HiStat["Authorized Hindi Acts<br/>(Vidhi Sahitya Prakashan) [VERIFIED]"]
+        EnJudg["English Judicial Opinions<br/>(SCR / e-Courts) [VERIFIED]"]
+        HiJudg["Translated Hindi Judgments<br/>(DigiSCR / High Courts) [VERIFIED]"]
     end
 
     subgraph Normalization["Devanagari Normalization & Alignment"]
         N1["NFC Unicode Canonical Normalization"]
         N2["Nukta / ZWJ / ZWNJ Sanitization"]
-        N3["Sentence & Section ID Alignment"]
+        N3["Section & Sentence ID Aligner"]
     end
 
     subgraph Representation["Dual-Space Semantic Representation"]
@@ -52,19 +71,6 @@ flowchart TD
     N3 --> Representation
     Representation --> Serving
 ```
-
----
-
-## 3. Official Parallel Statutory Corpora
-
-To establish unambiguous statutory grounding, LegalAI builds directly upon authorized Hindi translations published by the **Legislative Department, Ministry of Law and Justice, Government of India**:
-
-1. **The Official Language (Legislative) Commission Data:**
-   - Source: Official Gazettes & *Vidhi Sahitya Prakashan* publications.
-   - Authoritative Character: Per Section 5(1) of the *Official Languages Act, 1963*, a translation in Hindi published under the authority of the President in the Official Gazette is deemed to be the authoritative text in Hindi.
-2. **Alignment Strategy:**
-   - Central statutes (e.g., *Indian Contract Act, 1872*, *Companies Act, 2013*, *Arbitration and Conciliation Act, 1996*) are aligned at the **Section**, **Sub-Section**, and **Proviso** level using canonical alphanumeric identifiers (e.g., `ICA-1872-SEC-027`).
-   - Each record pairs `section_text_en` with its statutory twin `section_text_hi`, establishing parallel training and vector-grounding anchors.
 
 ---
 
@@ -101,8 +107,6 @@ The LegalAI platform enforces the following verified canonical legal terminology
 
 ## 5. Script & Character Normalization Rules
 
-Devanagari text in digital court filings is often subject to font encoding corruptions (e.g., legacy KrutiDev / Chanakya fonts converted to Unicode) and diacritic inconsistencies.
-
 ### 5.1 Unicode Normalization (NFC Standard)
 All incoming Hindi strings must undergo deterministic Unicode Normalization Form C (`NFC`):
 $$\text{Text}_{\text{normalized}} = \text{unicodedata.normalize}('NFC', \text{RawHindiText})$$
@@ -122,15 +126,6 @@ $$\text{Text}_{\text{normalized}} = \text{unicodedata.normalize}('NFC', \text{Ra
 
 Certain legal concepts, procedural writs, and Latin legal maxims must **not** be translated literally into Hindi:
 
-```mermaid
-flowchart TD
-    Term["Candidate Legal Term"] --> CheckType{"Term Category"}
-    
-    CheckType -->|"Statutory Codified Term"| Translate["Translate to Canonical Term<br/>(e.g., Consideration $\\rightarrow$ प्रतिफल)"]
-    CheckType -->|"Latin Legal Maxim"| TransliteratePlusGloss["Transliterate to Devanagari + Gloss<br/>(e.g., Res Judicata $\\rightarrow$ रेस ज्यूडिकाटा [प्राङ्न्याय])"]
-    CheckType -->|"Procedural Acronym / Act Title"| DualAnchor["Dual-Script Retention<br/>(e.g., DPDP Act $\\rightarrow$ डीपीडीपी अधिनियम [DPDP Act, 2023])"]
-```
-
 1. **Latin Doctrines:** Transliterate phonetically into Devanagari followed by the statutory Hindi equivalent in brackets:
    - *Res Judicata* $\rightarrow$ **रेस ज्यूडिकाटा (प्राङ्न्याय)**
    - *Habeas Corpus* $\rightarrow$ **हेबियस कॉर्पस (बंदी प्रत्यक्षीकरण)**
@@ -146,8 +141,7 @@ flowchart TD
 To support seamless cross-lingual retrieval (e.g., user queries in Hindi: *"क्या संविदा में गैर-प्रतिस्पर्धा खंड वैध है?"* and the system retrieves English precedents on Section 27):
 
 1. **Shared Multilingual Vector Space (Phase 2/3 Target):**
-   - The current production codebase uses monolingual 384-dim `BAAI/bge-small-en-v1.5`.
-   - The planned upgrade incorporates native multilingual dense models: **`BAAI/bge-m3`** (1024-dimensional) or **`intfloat/multilingual-e5-base`** (768-dimensional).
+   - Current codebase uses monolingual 384-dim `BAAI/bge-small-en-v1.5`.
+   - Planned upgrade incorporates native multilingual dense models: **`BAAI/bge-m3`** (1024-dimensional) or **`intfloat/multilingual-e5-base`** (768-dimensional).
 2. **Cross-Lingual Leakage Safeguards:**
-   - Cross-lingual leakage cannot be detected by character n-grams due to distinct scripts (Latin vs. Devanagari).
-   - Invariance is maintained by co-locating parallel English and Hindi sections under the same document split identifier (`document_id`).
+   - Invariance is maintained by co-locating parallel English and Hindi sections under the same document split identifier (`document_id`), audited via semantic cosine checks ($\text{CosineSim} \ge 0.88$).

@@ -1,10 +1,10 @@
 # 09. Data Preprocessing Pipeline
 
 **Document ID:** `LEGALAI-DOC-DE-09`  
-**Version:** `1.1.0`  
+**Version:** `1.2.0`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
-**Audited Date:** 2026-11-12  
-**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `backend/app/services/parser.py`, `backend/app/services/segmenter.py`, `PHASE_1_1_ISSUE_REGISTER.md`
+**Audited Date:** 2026-11-13  
+**Dependencies:** `INDEX.md`, `01_DATASET_ARCHITECTURE.md`, `backend/app/services/parser.py`, `backend/app/services/segmenter.py`, `PHASE_1_2_EVIDENCE_REGISTER.md`
 
 ---
 
@@ -20,7 +20,7 @@ This document details the end-to-end transformation pipeline that ingests raw Br
 
 ```mermaid
 flowchart TD
-    RawFile["Raw File (PDF / DOCX / HTML / TXT)"] --> BronzeStore["Bronze Store (Immutable Raw Bytes + SHA-256)"]
+    RawFile["Raw File (PDF / DOCX / HTML / TXT)"] --> BronzeStore["Bronze Store (Immutable Raw Bytes + SHA-256 Sidecars)<br/>data/bronze/"]
     
     BronzeStore --> FormatRouter{"Format Router"}
     
@@ -37,7 +37,7 @@ flowchart TD
     Clean3 --> Clean4["4. Citation Canonicalizer (SCC / AIR / INSC)"]
     Clean4 --> Clean5["5. Hierarchical Clause & Section Segmenter"]
     
-    Clean5 --> SilverOutput["Silver Lakehouse Store (Schema-Validated Parquet)"]
+    Clean5 --> SilverOutput["Silver Lakehouse Store (Schema-Validated Parquet)<br/>data/silver/validated/"]
 ```
 
 ---
@@ -59,7 +59,7 @@ The ingestion layer uses a three-tier extraction strategy optimized for throughp
   - Grayscale conversion and Otsu adaptive binarization.
   - Deskewing via Radon transform (bounding angle $\pm 15^\circ$).
   - Page margin cropping to eliminate black scanning edges.
-- Text recognized with character confidence $< 75\%$ is routed to human review quarantine.
+- Text recognized with character confidence $< 75\%$ is routed to human review quarantine (`data/silver/quarantine/`).
 
 ---
 

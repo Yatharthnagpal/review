@@ -1,10 +1,12 @@
 # LegalAI Dataset Engineering Documentation
 
 **Document ID:** `LEGALAI-DOC-DE-INDEX`  
-**Version:** `1.1.0`  
+**Version:** `1.2.0`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
+**Audited Date:** 2026-11-13  
 **Authors:** Senior AI Architect, Legal NLP Engineer, Data Engineer, ML Research Engineer  
-**Target Platform:** LegalAI (Indian Legal Intelligence Platform — English & Hindi)
+**Target Platform:** LegalAI (Indian Legal Intelligence Platform — English & Hindi)  
+**Readiness Determination:** `CONDITIONALLY READY FOR INDEPENDENT REVIEW`
 
 ---
 
@@ -21,15 +23,15 @@ The platform is designed to power the complete legal intelligence lifecycle for 
 
 ---
 
-## 2. Directory Structure and Document Matrix
+## 2. Directory Structure and Master Document Matrix
 
 ```
 docs/dataset-engineering/
 ├── INDEX.md                                # Master index and architecture guide (this file)
 ├── 01_DATASET_ARCHITECTURE.md              # Pipeline architecture (Bronze/Silver/Gold), ETL topology, storage tiers
-├── 02_SOURCE_REGISTRY.md                   # Verified registry of 16 candidate datasets across 4 primary categories
+├── 02_SOURCE_REGISTRY.md                   # 14-field verified registry of candidate datasets across 4 primary categories
 ├── 03_LICENSE_AND_PROVENANCE_POLICY.md     # Intellectual property, Indian Copyright Act §52(1)(q), DPDP Act, licenses
-├── 04_CANONICAL_DATA_SCHEMAS.md            # 10 production-grade Pydantic v2 & JSON schemas for all legal records
+├── 04_CANONICAL_DATA_SCHEMAS.md            # Production-grade Pydantic v2 & JSON Schema Draft 2020-12 schemas for all records
 ├── 05_LABEL_TAXONOMY.md                    # Canonical taxonomy for clauses, risks, Indian statutes, NER, and rhetorical roles
 ├── 06_ANNOTATION_GUIDELINES.md             # Dual-annotator agreement protocols, adjudication rules, Cohen's/Fleiss' Kappa
 ├── 07_BILINGUAL_DATA_STRATEGY.md           # English-Hindi cross-lingual strategy, legal terminology glossary, transliteration
@@ -41,9 +43,14 @@ docs/dataset-engineering/
 ├── 13_DATA_PRIVACY_AND_GOVERNANCE.md       # PII scrubbing, POCSO/BNS anonymization, DPDP compliance, audit trails
 ├── 14_DATASET_IMPLEMENTATION_ROADMAP.md    # Transition roadmap from Phase 1 foundation to Phase 2 data engineering
 ├── PHASE_1_1_CHANGELOG.md                  # Comprehensive record of Phase 1.1 revisions and evidence
-├── PHASE_1_1_ISSUE_REGISTER.md             # Consolidated tracking register of all identified and resolved issues
-├── PHASE_1_1_VALIDATION_REPORT.md          # Automated & manual validation results across all criteria
-└── PHASE_1_1_SIGNOFF.md                    # Final technical and legal review sign-off checklist
+├── PHASE_1_1_ISSUE_REGISTER.md             # Consolidated tracking register of Phase 1.1 issues
+├── PHASE_1_1_VALIDATION_REPORT.md          # Automated & manual validation results for Phase 1.1
+├── PHASE_1_1_SIGNOFF.md                    # Phase 1.1 review sign-off checklist
+├── PHASE_1_2_EVIDENCE_REGISTER.md          # Authoritative statutory, source, and codebase evidence records (Phase 1.2)
+├── PHASE_1_2_ISSUE_REGISTER.md             # Consolidated 29-issue register with resolution status (Phase 1.2)
+├── PHASE_1_2_VALIDATION_REPORT.md          # Evidence-based evaluation report across all 7 pillars (Phase 1.2)
+├── PHASE_1_2_SIGNOFF.md                    # Comprehensive criteria audit and readiness determination (Phase 1.2)
+└── PHASE_1_2_CHANGELOG.md                  # Document-by-document audit and change history (Phase 1.2)
 ```
 
 ---
@@ -51,7 +58,7 @@ docs/dataset-engineering/
 ## 3. Codebase Verification & Component Alignment
 
 Every documented component has been audited against the actual source code in the repository. Status definitions:
-- **Existing:** Verified in the current source code.
+- **Existing:** Verified in the current source code (`backend/app/` or `frontend/src/`).
 - **Partial:** Exists in code but lacks full documented functionality.
 - **Planned:** Described in architectural documentation; not yet implemented in code.
 - **Missing:** Required by feature scope but not found in repository.
@@ -75,10 +82,10 @@ Every documented component has been audited against the actual source code in th
 
 ---
 
-## 4. Operational Boundaries (Phase 1 & 1.1 Governance)
+## 4. Operational Boundaries (Phase 1.2 Governance)
 
-1. **No Source Code Modification:** No files within `frontend/` or `backend/` are modified during Phase 1 or Phase 1.1.
+1. **No Source Code Modification:** No files within `frontend/` or `backend/` are modified during Phase 1.2.
 2. **No Model Training:** Model pre-training, fine-tuning, and embedding retraining are strictly deferred to Phase 3.
 3. **No Bulk Ingestion:** Raw dataset downloads and heavy crawling are strictly deferred to Phase 2 pipelines.
-4. **License & Provenance Verification:** All dataset URLs, repository identifiers, licenses, and row counts are verified against upstream records or explicitly tagged with `NEEDS VERIFICATION`.
-5. **Human Approval Checkpoint:** Phase 2 data engineering cannot begin without explicit stakeholder sign-off on the Phase 1.1 documentation.
+4. **License & Provenance Verification:** All dataset URLs, repository identifiers, licenses, and row counts are verified against upstream records or explicitly tagged with `NOT VERIFIED` or `CONDITIONAL`.
+5. **Independent Review Checkpoint:** Phase 2 data engineering cannot begin without explicit independent stakeholder review and sign-off on the Phase 1.2 documentation.

@@ -1,10 +1,10 @@
 # 05. Label Taxonomy
 
 **Document ID:** `LEGALAI-DOC-DE-05`  
-**Version:** `1.1.0`  
+**Version:** `1.2.0`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
-**Audited Date:** 2026-11-12  
-**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `backend/app/models/schemas.py`, `PHASE_1_1_ISSUE_REGISTER.md`
+**Audited Date:** 2026-11-13  
+**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `backend/app/models/schemas.py`, `PHASE_1_2_EVIDENCE_REGISTER.md`
 
 ---
 
@@ -14,11 +14,12 @@ A deterministic, legally precise taxonomy is the prerequisite for high-performan
 
 This document defines the canonical multi-tier taxonomy for LegalAI:
 1. **Contract Clause Taxonomy (21 Canonical `ClauseType` Classes + CUAD Crosswalk)**
-2. **Contract Risk Severity & Typology (`RiskLevel` Standard)**
-3. **Perspective Lens Framework (Party A, Party B, Neutral Auditor)**
-4. **Indian Statutory Anchor Matrix (ICA 1872, DPDP 2023, Arb Act 1996, Companies Act 2013, CPA 2019)**
-5. **Legal Named Entity Recognition (NER) Taxonomy (11 Canonical Classes)**
-6. **Judicial Rhetorical Roles Taxonomy (7 Canonical OpenNYAI Classes)**
+2. **Context-Dependent Legal Risk Analysis (Nuanced Statutory Assessment)**
+3. **Reproducible Heuristic Risk-Scoring Formulation**
+4. **Perspective Lens Framework (Party A, Party B, Neutral Auditor)**
+5. **Indian Statutory Anchor Matrix (ICA 1872, DPDP 2023, Arb Act 1996, Companies Act 2013, CPA 2019)**
+6. **Legal Named Entity Recognition (NER) Taxonomy (11 Canonical Classes)**
+7. **Judicial Rhetorical Roles Taxonomy (7 Canonical OpenNYAI Classes)**
 
 ---
 
@@ -52,129 +53,92 @@ All clauses are classified into one primary category and zero or more secondary 
 
 ---
 
-## 3. Perspective Lens Framework
+## 3. Context-Dependent Legal Risk Analysis
 
-Risk analysis cannot be performed in the abstract because a clause that is advantageous to one contracting party is frequently hazardous to the counterparty. LegalAI enforces three distinct perspective lenses:
+Legal enforceability under Indian law cannot be evaluated using crude binary rules. A clause that is void in one commercial context may be fully enforceable in another. LegalAI requires contextual qualification for high-severity labels:
 
-```mermaid
-flowchart TD
-    Clause["Contract Clause Input"] --> LensRouter{"Perspective Lens Selector"}
-    
-    LensRouter -->|"Party A Perspective"| LensA["Party A Lens (Vendor / Licensor / Employer)<br/>Prioritizes payment security, liability caps, broad IP ownership"]
-    LensRouter -->|"Party B Perspective"| LensB["Party B Lens (Customer / Licensee / Employee)<br/>Prioritizes broad warranties, strict indemnities, flexible termination"]
-    LensRouter -->|"Neutral Auditor"| LensN["Neutral Legal Auditor Lens<br/>Focuses on statutory enforceability, balanced reciprocity, public policy"]
-```
+### 3.1 Non-Compete Clauses (Section 27, Indian Contract Act, 1872)
+- **During the Term of Employment/Contract (VALID):** Restrictive covenants operating *during* the subsistence of the contract are **valid and enforceable** to protect legitimate business interests (*Niranjan Shankar Golikari v. Century Spg. & Mfg. Co. AIR 1967 SC 1098*). They do not constitute a restraint of trade under Section 27.
+- **Post-Termination Non-Compete (VOID AB INITIO):** Restrictive covenants operating *after* termination or expiry of the agreement are **void ab initio** under Section 27 (*Percept D'Mark (India) Pvt. Ltd. v. Zaheer Khan (2006) 4 SCC 227*). Indian courts do not apply the English doctrine of reasonableness to post-employment restrictions.
+- **Statutory Exception (VALID):** An agreement not to carry on a similar business within specified local limits upon the **sale of the goodwill of a business** is explicitly valid under the Exception to Section 27, provided the limits appear reasonable to the court.
+- **Annotation Directive:** A non-compete clause cannot be marked `critical` without verifying whether it applies post-termination or during the term.
 
-1. **Party A (`party_a`):** Evaluates risk from the perspective of the first executing party (typically the service provider, vendor, licensor, lessor, or employer).
-2. **Party B (`party_b`):** Evaluates risk from the perspective of the receiving party (typically the customer, client, licensee, lessee, or employee).
-3. **Neutral Auditor (`neutral`):** Objective legal review evaluating statutory validity, procedural fairness, and court enforceability under Indian law.
+### 3.2 Governing Law & Jurisdiction Clauses (Sections 23 & 28, ICA 1872)
+- **Cross-Border Commercial Contracts (VALID):** Where at least one party is incorporated or resident outside India, the parties possess full party autonomy under Indian Private International Law to choose a foreign substantive governing law and a foreign seat of arbitration (*Bharat Aluminium Co. v. Kaiser Aluminium Technical Services (2012) 9 SCC 552*).
+- **Domestic Indian Parties (RESTRICTED / VOID):** Where *both* contracting parties are domestic Indian corporate entities, contracting out of Indian substantive law or excluding Indian courts violates Section 28 (restraint of legal proceedings) and Section 23 (public policy of India) (*TDM Infrastructure (P) Ltd. v. UE Development India (P) Ltd. (2008) 14 SCC 271*).
+- **Annotation Directive:** Tag as `critical` or `high` only when two domestic Indian entities attempt to contract out of Indian law.
 
 ---
 
-## 4. Risk Severity and Typology (`RiskLevel` Standard)
+## 4. Reproducible Heuristic Risk-Scoring Formulation
 
-Risks are assessed against contractual fairness and Indian statutory enforceability. Every identified risk is assigned a severity grade conforming to `RiskLevel` in `backend/app/models/schemas.py`:
+> [!NOTE]
+> **Heuristic Model Classification:**
+> The numerical risk score generated by LegalAI is a **rule-based heuristic ranking model** designed to triage contract review for legal practitioners. It does **not** represent an actuarially or legally validated prediction of litigation liability.
 
-```mermaid
-graph LR
-    Low["Low (0 - 39)<br/>Minor Ambiguity / Standard Term"] --> Medium["Medium (40 - 69)<br/>One-Sided / Lacks Reciprocity"]
-    Medium --> High["High (70 - 89)<br/>Substantial Financial Risk / Restrictive"]
-    High --> Critical["Critical (90 - 100)<br/>Statutory Bar / Void Ab Initio / Unlimited Liability"]
-```
+### 4.1 Mathematical Formulation
+For any given clause $c$, the risk score $\text{RiskScore}(c) \in [0, 100]$ is computed as follows:
 
-### 4.1 Severity Definitions and Triggers
+$$\text{RiskScore}(c) = \min\left(100, \, \max\left(0, \, \Big[\text{BaseWeight}(S_c) \times \text{PerspectiveFactor}(P) + \text{StatutoryPenalty}(c) - \text{MitigationDiscount}(c)\Big] \times \text{Confidence}(c)\right)\right)$$
 
-1. **Critical (`critical`, 90–100):**
-   - **Definition:** Directly violates mandatory Indian statutory provisions, is declared void *ab initio* by statute, or exposes a party to catastrophic uncapped liability.
-   - **Triggers:**
-     - Post-termination non-compete clause violating **Section 27 of the Indian Contract Act, 1872** (void *ab initio* per *Percept D'Mark v. Zaheer Khan*).
-     - Absolute waiver of right to litigate or arbitrate violating **Section 28 of the Indian Contract Act, 1872**.
-     - Uncapped, unlimited liability on indirect, consequential, or punitive damages.
-     - Unlawful object or consideration violating **Section 23 of the Indian Contract Act, 1872**.
+### 4.2 Parameter Definitions & Calibrated Weights
 
-2. **High (`high`, 70–89):**
-   - **Definition:** Heavy asymmetric risk exposure, severe financial detriment, or extreme one-sided termination rights without notice.
-   - **Triggers:**
-     - Unilateral termination for convenience with immediate effect (zero notice period).
-     - Broad indemnification extending to ordinary negligence or third-party acts beyond reasonable control.
-     - Punitive liquidated damages bearing no reasonable relationship to anticipated losses (conflicting with Section 74).
-     - Blanket perpetual non-disclosure obligations encompassing non-confidential public domain information.
+1. **Base Severity Weight ($\text{BaseWeight}(S_c)$):**
+   - `critical`: $95$
+   - `high`: $75$
+   - `medium`: $50$
+   - `low`: $20$
 
-3. **Medium (`medium`, 40–69):**
-   - **Definition:** Operational imbalances, ambiguous dispute resolution mechanisms, or missing protective boilerplate.
-   - **Triggers:**
-     - Asymmetric payment terms (e.g., Net 90 days with no late-payment interest for supplier).
-     - Lack of cure periods for curable contractual breaches.
-     - Ambiguous force majeure clauses lacking notice or duty to mitigate.
-     - Foreign governing law/jurisdiction without an explicit arbitration agreement between Indian corporate entities.
+2. **Perspective Factor ($\text{PerspectiveFactor}(P)$):**
+   - Perspective lens applied ($P \in \{\text{party\_a}, \text{party\_b}, \text{neutral}\}$):
+     - If clause terms disproportionately disfavor the analyzed party: $P = 1.2$
+     - If clause terms favor the analyzed party: $P = 0.6$
+     - Neutral legal auditor lens: $P = 1.0$
 
-4. **Low (`low`, 0–39):**
-   - **Definition:** Standard commercial boilerplate with minor drafting ambiguities or drafting style inconsistencies.
-   - **Triggers:**
-     - Standard mutual integration/entire agreement clauses.
-     - Informal notice provisions (e.g., ordinary unverified email).
-     - Generic severability declarations.
+3. **Statutory Penalty ($\text{StatutoryPenalty}(c)$):**
+   - Direct statutory bar (e.g., Post-term Section 27, Section 28 bar): $+25$
+   - Uncapped consequential/indirect damages liability: $+20$
+   - Procedural non-compliance (missing cure period, immediate termination): $+10$
+   - None: $0$
+
+4. **Mitigation Discount ($\text{MitigationDiscount}(c)$):**
+   - Reciprocal mutual termination notice ($\ge 30$ days): $-15$
+   - Reasonable financial liability cap (e.g., $1\times$ to $2\times$ annual contract value): $-20$
+   - Mandatory cure period ($\ge 15$ days) for curable breaches: $-10$
+   - None: $0$
+
+5. **Confidence Multiplier ($\text{Confidence}(c)$):**
+   - Rule match confidence score $\in [0.8, 1.0]$.
+
+### 4.3 Severity Mapping Bands
+- **Critical (`critical`):** Score $90$ to $100$
+- **High (`high`):** Score $70$ to $89$
+- **Medium (`medium`):** Score $40$ to $69$
+- **Low (`low`):** Score $0$ to $39$
 
 ---
 
 ## 5. Indian Statutory Anchor Matrix
 
-LegalAI anchors all compliance and risk intelligence directly to Indian legislative enactments.
+LegalAI anchors all compliance checks directly to codified enactments:
 
-```mermaid
-flowchart TD
-    ContractClause["Contract Clause"] --> StatEval{"Statutory Anchor Evaluation"}
-    
-    StatEval --> ICA["Indian Contract Act, 1872"]
-    StatEval --> DPDP["DPDP Act, 2023 (Phased Commencement)"]
-    StatEval --> Arb["Arbitration & Conciliation Act, 1996"]
-    StatEval --> Comp["Companies Act, 2013"]
-    StatEval --> CPA["Consumer Protection Act, 2019"]
-
-    ICA --> Sec10["Sec 10: Requirements of Contract"]
-    ICA --> Sec11["Sec 11: Competence to Contract (Minority Void)"]
-    ICA --> Sec23["Sec 23: Unlawful Object & Public Policy"]
-    ICA --> Sec27["Sec 27: Restraint of Trade (Void)"]
-    ICA --> Sec28["Sec 28: Restraint of Legal Proceedings"]
-    ICA --> Sec56["Sec 56: Impossibility & Frustration"]
-    ICA --> Sec73["Sec 73: Unliquidated Damages (Proof of Loss)"]
-    ICA --> Sec74["Sec 74: Liquidated Damages / Penalties"]
-    
-    DPDP --> DPDPGov["Data Governance Principles<br/>(Notice, Consent, Purpose Limitation)"]
-    CPA --> CPA2["Sec 2(46): Unfair Contract Terms"]
-```
-
-### 5.1 Statutory Reference Guide
-* **Indian Contract Act, 1872:**
-  - `ICA-SEC-10`: **What agreements are contracts.** Sets the essential ingredients: free consent, parties competent to contract, lawful consideration, lawful object, not expressly declared void.
-  - `ICA-SEC-11`: **Who are competent to contract.** Defines competence (age of majority, sound mind, not disqualified by law). A contract entered into by a minor is void *ab initio* (*Mohori Bibee v. Dharmodas Ghose*).
-  - `ICA-SEC-23`: **What considerations and objects are lawful.** Consideration or object is unlawful if forbidden by law, fraudulent, injurious to person or property, immoral, or opposed to public policy.
-  - `ICA-SEC-27`: **Agreement in restraint of trade void.** Every agreement restraining a person from exercising a lawful profession, trade, or business is void to that extent (sole exception: sale of goodwill within reasonable local limits).
-  - `ICA-SEC-28`: **Agreements in restraint of legal proceedings void.** Restricting enforcement of rights or limiting the statutory limitation period is void. Exception: valid arbitration agreements.
-  - `ICA-SEC-56`: **Agreement to do impossible act / Frustration.** An agreement to do an impossible act is void. If an act becomes impossible or unlawful after execution without default of either party, the contract becomes void (*Satyabrata Ghose v. Mugneeram Bangur*).
-  - `ICA-SEC-73`: **Compensation for loss or damage caused by breach (Unliquidated Damages).** Party suffering breach is entitled to compensation for loss/damage which naturally arose in the usual course of things, or which parties contemplated when contracting. Remote and indirect loss is barred. **Actual loss must be proven.**
-  - `ICA-SEC-74`: **Compensation for breach where penalty stipulated (Liquidated Damages).** Governs pre-agreed damages. The court awards reasonable compensation not exceeding the amount named, whether or not actual damage is proved, subject to judicial review (*Fateh Chand*, *Kailash Nath Associates*). Punitive penalties exceeding genuine pre-estimates of loss are unenforceable.
-* **Digital Personal Data Protection Act, 2023 (DPDP Act) — Phased Commencement:**
-  - `DPDP-SEC-05`: Notice obligations prior to seeking consent.
-  - `DPDP-SEC-06`: Consent conditions (free, specific, informed, unconditional, unambiguous).
-  - `DPDP-SEC-08`: Obligations of Data Fiduciaries (technical and organizational safeguards, erasure upon withdrawal).
-  - `DPDP-SEC-16`: Cross-border data transfer framework.
-  - *Note on Enforcement:* Operational rules are in phased notification by the Central Government.
-* **Arbitration and Conciliation Act, 1996:**
-  - `ARB-SEC-07`: Form of arbitration agreement (must be in writing).
-  - `ARB-SEC-11`: Judicial appointment of arbitrators.
-  - `ARB-SEC-34`: Grounds for setting aside arbitral awards (patent illegality, conflict with public policy of India).
-* **Companies Act, 2013:**
-  - `COMP-SEC-180`: Restrictions on powers of Board.
-  - `COMP-SEC-188`: Related party transactions requiring approvals.
-* **Consumer Protection Act, 2019:**
-  - `CPA-SEC-2-46`: **Unfair Contract Terms:** Unilateral termination, excessive security deposits, imposing disproportionate penalties on consumers.
+| Statute Code | Enactment | Section & Title | Core Legal Rule & Judicial Test |
+| :--- | :--- | :--- | :--- |
+| `ICA-SEC-10` | Indian Contract Act, 1872 | Section 10: Essential elements | Free consent, competent parties, lawful consideration, lawful object. |
+| `ICA-SEC-11` | Indian Contract Act, 1872 | Section 11: Competence to contract | Majority, sound mind, not disqualified. Minor's agreement void *ab initio* (*Mohori Bibee*). |
+| `ICA-SEC-23` | Indian Contract Act, 1872 | Section 23: Lawful object/consideration | Unlawful if forbidden by law, fraudulent, injurious, immoral, or opposed to public policy. |
+| `ICA-SEC-27` | Indian Contract Act, 1872 | Section 27: Restraint of trade | Restraint on trade void. Post-employment void (*Percept D'Mark*); during employment valid (*Niranjan Golikari*). |
+| `ICA-SEC-28` | Indian Contract Act, 1872 | Section 28: Restraint of legal proceedings | Absolute restriction on litigation or curtailing statutory limitation period is void. Arbitration exception valid. |
+| `ICA-SEC-56` | Indian Contract Act, 1872 | Section 56: Frustration & impossibility | Agreement to do impossible act void; subsequent impossibility without fault dissolves contract (*Satyabrata Ghose*). |
+| `ICA-SEC-73` | Indian Contract Act, 1872 | Section 73: Unliquidated damages | Compensation for natural, direct, foreseeable losses. **Actual proof of loss required.** Remote damages barred. |
+| `ICA-SEC-74` | Indian Contract Act, 1872 | Section 74: Liquidated damages & penalty | Court awards reasonable compensation not exceeding stipulated sum. Penalties unenforceable beyond reasonable pre-estimate (*Kailash Nath*). |
+| `DPDP-SEC-06`| DPDP Act, 2023 | Section 6: Consent conditions | Notice and free, specific, informed consent. *(Note: Phased commencement under Section 1(2))*. |
+| `ARB-SEC-07` | Arb. & Conciliation Act, 1996 | Section 7: Arbitration agreement | Mandatory written arbitration agreement; ousts ordinary civil court jurisdiction. |
+| `CPA-SEC-2-46`| Consumer Protection Act, 2019 | Section 2(46): Unfair contract terms | Unilateral termination, excessive security deposits, imposing unreasonable penalties on consumers. |
 
 ---
 
 ## 6. Legal Named Entity Recognition (NER) Taxonomy (11 Classes)
-
-The Legal NER tagset defines exactly 11 canonical legal entity classes:
 
 ```
 [B/I]-PETITIONER            : Individual, corporation, or entity initiating lawsuit / first party
@@ -193,8 +157,6 @@ The Legal NER tagset defines exactly 11 canonical legal entity classes:
 ---
 
 ## 7. Judicial Rhetorical Roles Taxonomy (7 Classes)
-
-For judgment decomposition and FIRAC extraction, LegalAI adopts the 7 canonical rhetorical roles established by OpenNYAI and SemEval-2023 Task 6:
 
 ```mermaid
 graph TD

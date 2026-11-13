@@ -1,10 +1,10 @@
 # 06. Annotation Guidelines
 
 **Document ID:** `LEGALAI-DOC-DE-06`  
-**Version:** `1.1.0`  
+**Version:** `1.2.0`  
 **Status:** Draft v1.0 — Pending Technical and Legal Review  
-**Audited Date:** 2026-11-12  
-**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `05_LABEL_TAXONOMY.md`, `PHASE_1_1_ISSUE_REGISTER.md`
+**Audited Date:** 2026-11-13  
+**Dependencies:** `INDEX.md`, `04_CANONICAL_DATA_SCHEMAS.md`, `05_LABEL_TAXONOMY.md`, `PHASE_1_2_EVIDENCE_REGISTER.md`
 
 ---
 
@@ -12,7 +12,7 @@
 
 High-quality legal artificial intelligence requires domain-expert annotations with rigorous quality control. Because legal interpretation is subjective and nuanced, naive crowdsourcing produces noisy labels that impair model reliability.
 
-This guideline specifies the formal annotation protocols, boundary conditions, inter-annotator agreement (IAA) thresholds, and adjudication procedures required for all dataset curation in **LegalAI**.
+This guideline specifies the formal annotation protocols, boundary conditions, inter-annotator agreement (IAA) thresholds, contextual examples, and adjudication procedures required for all dataset curation in **LegalAI**.
 
 ---
 
@@ -56,8 +56,6 @@ flowchart TD
 
 All training and evaluation datasets require a double-blind dual-annotation setup where Annotator 1 and Annotator 2 independently annotate the identical source document without cross-communication.
 
-### 3.1 Inter-Annotator Agreement (IAA) Metrics
-
 | Annotation Task | Target Metric | Minimum Acceptance Threshold | Resolution Protocol |
 | :--- | :--- | :--- | :--- |
 | **Clause Classification (21 `ClauseType` Classes)** | Cohen's Kappa ($\kappa$) | $\kappa \ge 0.82$ (Near-perfect agreement) | Disagreements routed to Tier 2 Adjudicator |
@@ -68,59 +66,48 @@ All training and evaluation datasets require a double-blind dual-annotation setu
 
 ---
 
-## 4. Task-Specific Annotation Procedures
+## 4. Exemplar Annotation Criteria for Critical & High-Risk Clauses
 
-### 4.1 Task A: Contract Clause Segmentation & Classification
+To prevent annotator drift and subjective inconsistency, annotators must adhere to standardized inclusion, exclusion, and contextual criteria:
 
-1. **Boundary Demarcation:**
-   - Include the clause header/numbering (e.g., `12. INDEMNITY.`) as `clause_title`.
-   - The `clause_text` must capture the complete operational sentence or paragraph up to the final period before the next numbered provision.
-   - Character offsets (`char_start`, `char_end`) must be recorded using **0-based Unicode code points** on the normalized text.
-2. **Category Assignment:**
-   - Review against the 21 canonical `ClauseType` classes in `05_LABEL_TAXONOMY.md`.
-   - If a clause conflates multiple subjects (e.g., *Governing Law & Dispute Resolution*), tag the dominant subject as `clause_category` and the ancillary subject under `secondary_categories`.
+### 4.1 Non-Compete Clauses (`Non-Compete`, Section 27 ICA)
+* **Inclusion Criteria:** Provisions restraining a party from carrying on a profession, trade, business, or competitive employment.
+* **Exclusion Criteria:** Confidentiality obligations, non-solicitation of employees (which does not completely bar trade), or non-circumvention clauses.
+* **Positive Example (Critical Risk):** *"For a period of 24 months following the termination of this Agreement, the Executive shall not directly or indirectly engage in any business competing with the Company within India."* (Post-termination; void under Section 27 per *Percept D'Mark*).
+* **Negative Example (Valid / Low Risk):** *"During the term of employment, the Employee shall devote their whole time exclusively to the business of the Company and shall not engage in any other business or vocation."* (Valid during employment per *Niranjan Shankar Golikari*).
+* **Ambiguous Example (Medium / High Risk):** *"The Service Provider covenants not to provide similar IT consulting services to any entity operating in the same sector for 6 months post-termination, unless prior written consent is obtained."*
+* **Escalation Rule:** If restraint is post-termination, tag as `critical` under Party B lens; if during employment, tag as `low`/`medium`. If linked to sale of business goodwill, tag as `medium` and escalate to Tier 2 Adjudicator to evaluate local reasonableness.
 
-### 4.2 Task B: Risk Scoring and Remediation Drafting
-
-1. **Mandatory Perspective Lens Selection:**
-   - Every risk annotation must specify the perspective lens: **Party A (`party_a`)**, **Party B (`party_b`)**, or **Neutral Legal Auditor (`neutral`)**.
-2. **Scoring Rules:**
-   - Mark as `critical` ($90-100$) if there is a direct statutory bar:
-     - Section 27 post-term non-compete (void *ab initio*).
-     - Section 28 absolute restriction on legal proceedings or curtailment of limitation periods.
-     - Uncapped liability for consequential or indirect damages.
-   - Mark as `high` ($70-89$) if unilateral termination without cause has zero notice, or indemnification covers ordinary negligence without a cap.
-   - For damages clauses:
-     - Differentiate **Section 73** (unliquidated damages, requiring proof of actual direct loss) from **Section 74** (liquidated damages / penalties, where excessive penalties are subject to judicial capping).
-3. **Remediation Guidelines:**
-   - The suggested revision must provide balanced language consistent with Indian commercial drafting standards.
-
-### 4.3 Task C: Legal Named Entity Recognition (NER) (11 Classes)
-
-1. **Boundary Inclusions:**
-   - **`STATUTE`**: Capture the full official short title (e.g., `Indian Contract Act, 1872`, NOT just `Contract Act`).
-   - **`SECTION`**: Include the word "Section" or "Sec." along with all sub-clauses: `Section 74(1)(a)`.
-   - **`MONETARY_AMOUNT`**: Include currency descriptors: `₹1,50,00,000`, `Rs. 50 Lakhs`, `USD 10,000`.
-   - **`PRECEDENT_CITATION`**: Include reporter volume, abbreviation, page, and paragraph: `(2015) 4 SCC 136`.
-   - **`OBLIGATION`**: Actionable covenant clauses (e.g., `shall deliver monthly audited financial statements`).
-2. **Boundary Exclusions:**
-   - Exclude trailing syntactic punctuation marks (periods, commas, semicolons) that belong to grammar rather than the entity span.
-
-### 4.4 Task D: FIRAC Case Study Decomposition
-
-Annotators must parse judicial opinions according to the 7 canonical rhetorical roles:
-
-1. **Facts (`facts`):** Material dispute events, contractual obligations, breach actions. Exclude lower court decree details.
-2. **Ruling by Lower Court (`ruling_by_lower_court`):** Decrees of trial courts, appellate High Court benches, or tribunals.
-3. **Argument (`arguments`):** Distinct legal propositions advanced by petitioner and respondent counsels.
-4. **Statute (`statute`):** Legislative provisions, rules, and constitutional articles examined.
-5. **Precedent (`precedent`):** Prior case law considered, followed, or distinguished.
-6. **Ratio Decidendi (`ratio_decidendi`):** The binding legal principle necessary to resolve the dispute (verified using Wambaugh's Inversion Test).
-7. **Ruling by Present Court (`holding` / `disposition`):** Operative order (appeal allowed/dismissed, decree set aside, costs).
+### 4.2 Limitation of Liability Clauses (`Liability`, Sections 73-74 ICA)
+* **Inclusion Criteria:** Terms establishing monetary caps, excluding direct or indirect damages, or disclaiming statutory warranties.
+* **Positive Example (High / Critical Risk):** *"In no event shall the Vendor's total aggregate liability exceed INR 1,000, and Customer hereby waives all claims for direct, indirect, punitive, or statutory damages."* (Grossly disproportionate cap; unconscionable under commercial standards).
+* **Negative Example (Standard / Balanced):** *"Each party's total aggregate liability arising out of or related to this Agreement shall be limited to the total fees paid or payable by Customer in the twelve (12) months preceding the incident."* (Commercially standard 12-month trailing cap).
+* **Escalation Rule:** If liability is completely uncapped for indemnification while capped for all other breaches, tag asymmetry under the affected party lens.
 
 ---
 
-## 5. Curation of Gold-Certified Benchmarks
+## 5. Formal Adjudication & Human Escalation Workflow
+
+When double-blind annotations diverge below threshold ($\kappa < 0.82$):
+
+```mermaid
+flowchart TD
+    Divergence["Annotator Disagreement Detected<br/>(e.g., Annotator 1 = Critical, Annotator 2 = Medium)"] --> FlagQueue["Automated Adjudication Queue"]
+    
+    FlagQueue --> Review["Tier 2 Senior Legal Adjudicator Review"]
+    
+    Review --> ContextCheck{"Evaluate Factual & Statutory Context"}
+    
+    ContextCheck -->|"Statutory Exception Applies (e.g., Goodwill Sale)"| SettleLow["Assign Medium Severity + Legal Context Note"]
+    ContextCheck -->|"Absolute Statutory Bar Applies (e.g., Post-Term Restraint)"| SettleCrit["Assign Critical Severity + Statutory Nexus"]
+    ContextCheck -->|"Genuinely Ambiguous Drafting"| SettleSplit["Record Secondary Category + Clarification Suggestion"]
+    
+    SettleLow & SettleCrit & SettleSplit --> GoldSeal["Certified Gold Record with Adjudicator Signature"]
+```
+
+---
+
+## 6. Curation of Gold-Certified Benchmarks
 
 To guarantee clean evaluation:
 1. **100% Expert Adjudication:** 100% of samples designated for `data/gold/benchmarks/` must be vetted by a Tier 2 Senior Legal Adjudicator.
